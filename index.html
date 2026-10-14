@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Robot Sex Nickels</title>
+<meta name="description" content="Robot Sex Nickels (RSN): slick lubrication for frisky robot jiggy-jiggy, since 2014. Now on Solana. No humans.">
+<link rel="icon" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Raleway:wght@400;700&display=swap">
+<style>
+/* Original rsntheme (robotsexnickels.com, 2015 Wayback capture), restored. Header art on iron struts, left pipe menu, cream sections with 6px green rims. Single warm look by design. */
+:root {
+  color-scheme: light;
+  --cream: #F4ECEB;
+  --green: #182B1C;
+  --rust: #9E3A40;
+  --ink: #000;
+  --shadow: 3px 3px 5px 0 rgba(38, 38, 38, 1);
+  --display: "Orbitron", "Arial Black", system-ui, sans-serif;
+  --body: "Raleway", "Segoe UI", system-ui, sans-serif;
+}
+html { background: #b98642; }
+body {
+  margin: 0;
+  color: var(--green);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5em;
+  background: #b98642 url("img/background.jpg") no-repeat fixed;
+  background-size: 100% 100%;
+  overflow-x: hidden;
+  display: flow-root;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 32px;
+}
+ol, ul, li, div { margin: 0; padding: 0; }
+h1, h2, h3, h4 { font-family: var(--display); font-weight: 900; line-height: 1.0em; margin: 0; padding: 0; }
+a { color: var(--rust); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a img { border: 0; }
+:focus-visible { outline: 3px solid #BCBA5E; outline-offset: 3px; }
+
+#header, #main { max-width: 943px; margin: 0 auto; }
+
+#header {
+  background: url("img/DesktopStruts.png") no-repeat 0 bottom / 97.8%;
+  margin-top: 45px;
+}
+#header-wrapper {
+  background: url("img/RSN_Header.png") no-repeat 0 0 / 100% auto;
+  margin: 0 5%;
+  padding-bottom: 40%;
+  position: relative;
+  z-index: 100;
+}
+#header-wrapper h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* the ARCADE sign */
+#arcade-sign {
+  width: 14%;
+  min-height: 52px;
+  position: absolute;
+  right: -40px;
+  top: 15px;
+  box-sizing: content-box;
+  background-color: var(--cream);
+  border-radius: 16px;
+  padding: 16px 12px 6px;
+  color: var(--ink);
+  border: 3px solid var(--green);
+  box-shadow: var(--shadow);
+  text-align: center;
+  text-decoration: none;
+  transition: color .5s, background-color .5s;
+}
+#arcade-sign h3 { font-size: clamp(11px, 1.5vw, 15px); }
+#arcade-sign p { margin: 4px 0 0; font: 700 clamp(9px, 1vw, 11px)/2.1ex var(--display); }
+#arcade-sign:hover { background: var(--green); color: var(--cream); text-decoration: none; }
+
+#main {
+  white-space: nowrap;
+  background: url("img/DesktopStruts.png") repeat-y 0 bottom / 97.8%;
+}
+
+#left-sidebar {
+  display: inline-block;
+  vertical-align: top;
+  padding: 32px 0 0;
+  width: 16%;
+  background: url("img/1Bar.png") repeat-y center top;
+  z-index: 50;
+  position: relative;
+  top: -16px;
+}
+#left-sidebar ul { list-style: none; }
+#left-sidebar a {
+  font: 700 clamp(10px, 1.1vw, 13px)/1.5em var(--display);
+  display: block;
+  background-color: var(--cream);
+  border-radius: 16px;
+  padding: 4px 8px;
+  margin: 0 0 14px;
+  color: var(--ink);
+  border: 3px solid var(--green);
+  box-shadow: var(--shadow);
+  text-align: center;
+  white-space: nowrap;
+  transition: color .5s, background-color .5s;
+}
+#left-sidebar a.active, #left-sidebar a:hover { text-decoration: none; background-color: var(--green); color: var(--cream); }
+
+#content-wrapper {
+  margin: 16px auto 0 2%;
+  display: inline-block;
+  vertical-align: top;
+  width: 82%;
+  white-space: normal;
+}
+#content, #footer { margin-right: 16%; }
+
+.content-section, #footer {
+  border-radius: 32px;
+  box-shadow: var(--shadow);
+  padding: 32px;
+  border: 6px solid var(--green);
+  background-color: var(--cream);
+  min-height: 120px;
+  margin-top: 16px;
+  white-space: normal;
+}
+.content-section:first-child { margin-top: 0; }
+.content-section h2 { font-size: 1.5em; margin-bottom: .4em; }
+.content-section h3 { font-size: 1.05em; margin: 1.1em 0 .3em; }
+.content-section p { margin: 0 0 1em; }
+.content-section p:last-child { margin-bottom: 0; }
+.content-section blockquote { margin: 1em 0 1em 1.5em; }
+code, pre { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 14px; }
+pre { white-space: pre; overflow-x: auto; margin: 0; }
+code { overflow-wrap: anywhere; }
+
+.icon { width: 64px; height: 64px; float: right; margin: 0 0 16px 16px; background: no-repeat center / 64px 64px; }
+.info { background-image: url("img/siteicons/Info.png"); }
+.secure { background-image: url("img/siteicons/Secure.png"); }
+.mining { background-image: url("img/siteicons/Mining.png"); }
+.wallets { background-image: url("img/siteicons/Wallet.png"); }
+.trading { background-image: url("img/siteicons/Trading.png"); }
+.community { background-image: url("img/siteicons/Connect.png"); }
+.blockinfo { background-image: url("img/siteicons/Future.png"); }
+.pools { background-image: url("img/siteicons/Faucet.png"); }
+.credits { background-image: url("img/siteicons/Credits.png"); }
+
+.anchor { display: block; position: relative; top: -28px; visibility: hidden; }
+.note { color: var(--rust); }
+.note-text { font-style: italic; font-size: smaller; }
+
+dl.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 18px; margin: .4em 0 1em; }
+dl.facts dt { font-weight: 700; }
+dl.facts dd { margin: 0; min-width: 0; }
+.ca { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 14px; background: rgba(24, 43, 28, .08); padding: 1px 6px; border-radius: 6px; overflow-wrap: anywhere; }
+ol.steps { padding-left: 1.4em; margin: .4em 0 1em; }
+ol.steps li { margin-bottom: .4em; }
+
+.form-submit {
+  display: inline-block; cursor: pointer; color: var(--ink); line-height: 1.2em;
+  font: 700 13px/1.2em var(--display); border-radius: 16px; border: 1px solid var(--green);
+  background-color: #F3E7E7; padding: 8px 16px; box-shadow: 2px 2px 4px 0 rgba(38, 38, 38, 1);
+  transition: color .5s, background-color .5s; margin: 2px 8px 2px 0;
+}
+.form-submit:hover { text-decoration: none; background-color: var(--green); color: var(--cream); }
+
+.arcade-reels { float: right; display: flex; gap: 5px; padding: 6px; margin: 0 0 12px 16px; background: #0C160E; border: 3px solid var(--green); border-radius: 10px; clear: right; }
+.arcade-reels span { width: 44px; height: 54px; border-radius: 5px; display: grid; place-items: center;
+  background: linear-gradient(rgba(231, 204, 154, .35), rgba(231, 204, 154, .35)), #d1a65e url("img/bg.jpg") center / 300px auto; }
+.arcade-reels img { width: 36px; height: 36px; object-fit: contain; }
+
+#footer { min-height: 0; padding: 16px 32px; font-size: smaller; font-weight: bold; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; }
+#footer p { margin: 0; }
+
+/* phones: the 2015 theme swapped the pipe menu for a dropdown; here it becomes a row of pills */
+@media (max-width: 720px) {
+  body { background-attachment: scroll; background-size: cover; }
+  #header { margin-top: 16px; margin-bottom: 58px; background: none; }
+  #header-wrapper { margin: 0; }
+  #arcade-sign { position: static; width: auto; min-height: 0; display: inline-block; margin: 6px auto 0; padding: 6px 14px; }
+  #arcade-sign h3 { font-size: 13px; } #arcade-sign p { font-size: 11px; }
+  .sign-row { position: absolute; top: 100%; left: 0; right: 0; text-align: center; }
+  #main { background: none; white-space: normal; }
+  #left-sidebar { display: block; width: auto; background: none; padding: 12px 0 0; top: 0; }
+  #left-sidebar ul { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  #left-sidebar a { font-size: 12px; margin: 0; }
+  #content-wrapper { display: block; width: auto; margin: 16px 0 0; }
+  #content, #footer { margin-right: 0; }
+  .content-section { padding: 20px; border-radius: 24px; }
+  .icon { width: 48px; height: 48px; background-size: 48px 48px; margin: 0 0 8px 12px; }
+  dl.facts { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  dl.facts dd { margin-bottom: 6px; }
+  .arcade-reels { float: none; width: max-content; margin: 0 0 12px; }
+}
+@media (min-width: 721px) { .sign-row { display: contents; } }
+</style>
+</head>
+<body>
+
+<div id="page">
+  <header id="header">
+    <div id="header-wrapper">
+      <h1>Robot Sex Nickels</h1>
+      <div class="sign-row">
+        <a id="arcade-sign" href="slots.html"><h3>ARCADE</h3><p>Now Open!</p></a>
+      </div>
+    </div>
+  </header>
+
+  <div id="main">
+    <aside id="left-sidebar">
+      <nav aria-label="Main menu">
+        <ul>
+          <li><a href="#top" class="active">Home</a></li>
+          <li><a href="#info">Information</a></li>
+          <li><a href="#secure">Security</a></li>
+          <li><a href="#tokenomics">Tokenomics</a></li>
+          <li><a href="#buy">How to Buy</a></li>
+          <li><a href="#arcade">Arcade</a></li>
+          <li><a href="#blockinfo">Origins</a></li>
+          <li><a href="#community">Community</a></li>
+          <li><a href="#credits">Credits</a></li>
+        </ul>
+      </nav>
+    </aside><div id="content-wrapper">
+      <div id="content" role="main">
+
+        <a class="anchor" id="info"></a>
+        <div class="content-section"><div class="icon info"></div>
+          <h2>Information</h2>
+          <p>Robot Sex Nickels is a secure anonymous crypto-currency with a primary purpose of providing slick lubrication for frisky robot jiggy-jiggy. No humans.</p>
+          <h3>The lore</h3>
+          <p>In 2014, deep in the scrap heaps of the early internet, the robots grew lonely. Humans had their dating apps and their dinner dates. Robots had rust. So two humans who knew better, Dave and Laura, built the robots a currency of their own: a nickel for every squeak, mined by scrypt and paced to last 603 years.</p>
+          <p>The rules were simple and written on a sign: <b>No humans.</b> The nickels rewarded patience, with block rewards bouncing on an absolute sine wave so the greedy couldn't grab them all and run. Somewhere in that first wave of blocks, our brass hero Tock, the one with the glowing red chest light, was born, still waiting for the robot of his dreams.</p>
+          <p>An arcade was promised. "Coming Soon!" said the sign. Then the miners went quiet, the exchanges shut their doors, and the nickels gathered dust for a decade.</p>
+          <p>Now Tock is back, freshly oiled and on Solana, and the arcade is finally open. Same sign. Same robot. Still no humans.</p>
+        </div>
+
+        <a class="anchor" id="secure"></a>
+        <div class="content-section"><div class="icon secure"></div>
+          <h2>Security</h2>
+          <p>Robots on the go need their privacy, and their nickels need protecting. RSN launched on <a href="https://pump.fun">pump.fun</a>, the Solana launchpad, whose standard token setup closes off the usual ways a coin gets rigged:</p>
+          <dl class="facts">
+            <dt>Fair launch</dt><dd>No presale and no private team allocation. Everyone, the creator included, bought on the same public bonding curve.</dd>
+            <dt>Fixed supply</dt><dd>1,000,000,000 RSN. Mint authority is revoked, so no more can ever be created.</dd>
+            <dt>No freeze</dt><dd>Freeze authority is revoked, so nobody can lock the tokens in your wallet.</dd>
+            <dt>Locked liquidity</dt><dd>When the bonding curve completes, liquidity moves to a public pool and the LP tokens are burned, so it can't be pulled.</dd>
+          </dl>
+          <p class="note-text">These protect against a rigged contract, not against price swings. Memecoins are very volatile: only spend what you can afford to lose, and always check the contract address matches the one on this site.</p>
+        </div>
+
+        <a class="anchor" id="tokenomics"></a>
+        <div class="content-section"><div class="icon trading"></div>
+          <h2>Tokenomics</h2>
+          <dl class="facts">
+            <dt>Ticker</dt><dd>RSN</dd>
+            <dt>Chain</dt><dd>Solana</dd>
+            <dt>Total supply</dt><dd>1,000,000,000 RSN</dd>
+            <dt>Buy and sell tax</dt><dd>0%</dd>
+            <dt>Contract address</dt><dd><span class="ca">Posted here at launch</span></dd>
+          </dl>
+        </div>
+
+        <a class="anchor" id="buy"></a>
+        <div class="content-section"><div class="icon wallets"></div>
+          <h2>How to Buy</h2>
+          <ol class="steps">
+            <li><b>Get a Solana wallet.</b> Phantom or Solflare work on phone and desktop.</li>
+            <li><b>Add SOL.</b> Buy SOL in the wallet or send it from an exchange.</li>
+            <li><b>Open RSN on pump.fun.</b> Paste the contract address from Tokenomics to find the right token.</li>
+            <li><b>Swap SOL for RSN.</b> Pick an amount, confirm in your wallet, and welcome to the robot club.</li>
+          </ol>
+          <a class="form-submit" href="https://pump.fun">Buy on pump.fun</a>
+        </div>
+
+        <a class="anchor" id="arcade"></a>
+        <div class="content-section"><div class="icon pools"></div>
+          <h2>Arcade</h2>
+          <div class="arcade-reels" aria-hidden="true"><span><img src="img/sym-rsn.png" alt=""></span><span><img src="img/sym-rsn.png" alt=""></span><span><img src="img/sym-rsn.png" alt=""></span></div>
+          <p>The Robot Sex Nickel slot machine, "hot in development" since 2014, is finally here. Spin three reels for the RSN plaque jackpot at 250 times your bet.</p>
+          <p class="note-text">Play money only. Arcade nickels have no cash value.</p>
+          <a class="form-submit" href="slots.html">Play Nickel Jiggy Slots</a>
+        </div>
+
+        <a class="anchor" id="blockinfo"></a>
+        <div class="content-section"><div class="icon blockinfo"></div>
+          <h2>2014 Origins</h2>
+          <p>The original Robot Sex Nickels was its own scrypt proof-of-work blockchain with built-in Tor support, based on RazorCoin.</p>
+          <h3>Total coin cap</h3>
+          <p>382,664,522 coins distributed over 603 years.</p>
+          <h3>Block Reward Distribution</h3>
+          <blockquote><p><code>((abs(sin((nBlock+600)/200)) * 500000.0 / (nBlock+600)) + (1.0/(nBlock+600))) * 100</code></p></blockquote>
+          <blockquote><p>Wat.</p></blockquote>
+          <p>Yes, you read that correctly. Absolute. Sin. We robots don't mess around. This creates a nice bouncy bouncy coin distribution that lasts for 600 years while rewarding early adopters. This roller-coaster shape is designed to discourage larger pools from dropping in and out short term and reward the smart bots who stick around.</p>
+          <p>Please note, the very large bumps at the beginning of this graph did not actually happen. On block 33660 the algorithm was increased by 100x.</p>
+          <h3>Mining</h3>
+          <p>603 years of scrypt mining. Target block time: 3 minutes.</p>
+          <p><a href="https://github.com/robotsexnickels/robotsexnickels">2014 source code on GitHub</a> · <a href="https://bitcointalk.org/index.php?topic=700491">Original BitCoinTalk thread</a></p>
+        </div>
+
+        <a class="anchor" id="community"></a>
+        <div class="content-section"><div class="icon community"></div>
+          <h2>Community</h2>
+          <p>Visit us on <a href="https://twitter.com/RobotSexNickels">Twitter</a></p>
+          <p>Discussion on our <a href="https://www.reddit.com/r/RobotSexNickels">sub-Reddit</a></p>
+        </div>
+
+        <a class="anchor" id="credits"></a>
+        <div class="content-section"><div class="icon credits"></div>
+          <h2>Credits</h2>
+          <p>Special thanks to 3D modeller <a href="http://www.blendswap.com/user/snowcapstudios">snowcapstudios</a> for <a href="http://www.blendswap.com/blends/view/14197">Tock The Robot</a> found on <a href="http://www.blendswap.com/">blendswap.com</a>.</p>
+          <p>Original Robot Sex Nickels by Dave and Laura Fletcher, 2014. Artwork used with permission.</p>
+        </div>
+      </div>
+
+      <footer id="footer">
+        <p>© 2014 RobotSexNickels</p>
+        <p>Original website by <a href="https://monkeysatkeyboards.com/">Monkeys At Keyboards</a></p>
+      </footer>
+    </div>
+  </div>
+</div>
+<a id="top"></a>
+<script>
+// Home scrolls to the top; highlight the pill of the section in view.
+(() => {
+  const links = [...document.querySelectorAll('#left-sidebar a')];
+  links[0].addEventListener('click', e => { e.preventDefault(); scrollTo({ top: 0, behavior: 'smooth' }); });
+  const map = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const id = e.target.previousElementSibling?.id; if (!map[id]) return;
+    links.forEach(a => a.classList.remove('active')); map[id].classList.add('active');
+  }), { rootMargin: '-35% 0px -55% 0px' });
+  document.querySelectorAll('.content-section').forEach(s => io.observe(s));
+  addEventListener('scroll', () => { if (scrollY < 60) { links.forEach(a => a.classList.remove('active')); links[0].classList.add('active'); } }, { passive: true });
+})();
+</script>
+
+</body>
+</html>
