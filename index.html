@@ -88,7 +88,7 @@ a img { border: 0; }
   top: 30px;
   width: min(460px, calc((100vw - 943px) / 2 - 3vw));
 }
-#faucet-canvas { display: block; width: 100%; height: auto; opacity: 0; transition: opacity .4s; cursor: pointer; filter: drop-shadow(6px 10px 10px rgba(0,0,0,.45)); }
+#faucet-canvas { display: block; width: 100%; height: auto; opacity: 0; transition: opacity .4s; cursor: pointer; filter: drop-shadow(-6px 10px 10px rgba(0,0,0,.45)); transform: scaleX(-1); /* mirrored: Tock left, faucet right */ }
 #faucet-canvas.ready { opacity: 1; }
 @media (max-width: 1300px) { #tock-scene { display: none; } }
 
