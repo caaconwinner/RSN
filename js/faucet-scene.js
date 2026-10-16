@@ -42,10 +42,10 @@
     (window.requestIdleCallback || setTimeout)(() => { load('turn'); load('drip'); });
   });
   window.RSNFaucet = {
+    ready: true,
     open() { wantOpen = true; load('turn'); load('drip'); return done; },
     get state() { return clip === 'dry' ? (wantOpen ? 'opening' : 'closed') : clip === 'turn' ? 'opening' : 'open'; },
   };
-  // until the wallet hookup exists, clicking the scene (or ?faucet in the URL) opens it
-  canvas.addEventListener('click', () => RSNFaucet.open());
+  // ?faucet in the URL opens it straight away (handy for testing)
   if (new URLSearchParams(location.search).has('faucet')) RSNFaucet.open();
 })();

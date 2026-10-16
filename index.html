@@ -88,8 +88,20 @@ a img { border: 0; }
   top: 30px;
   width: min(460px, calc((100vw - 943px) / 2 - 3vw));
 }
-#faucet-canvas { display: block; width: 100%; height: auto; opacity: 0; transition: opacity .4s; cursor: pointer; filter: drop-shadow(-6px 10px 10px rgba(0,0,0,.45)); transform: scaleX(-1); /* mirrored: Tock left, faucet right */ }
+#faucet-canvas { display: block; width: 100%; height: auto; opacity: 0; transition: opacity .4s; filter: drop-shadow(-6px 10px 10px rgba(0,0,0,.45)); transform: scaleX(-1); /* mirrored: Tock left, faucet right */ }
 #faucet-canvas.ready { opacity: 1; }
+#faucet-panel { position: relative; margin: -30% 0 0 48%; width: 52%; text-align: center; pointer-events: auto; }
+#faucet-panel button {
+  font: 700 13px/1.5em var(--display); color: var(--ink); background: var(--cream);
+  border: 3px solid var(--green); border-radius: 16px; padding: 6px 16px; cursor: pointer;
+  box-shadow: var(--shadow); transition: color .5s, background-color .5s;
+}
+#faucet-panel button:hover:not(:disabled) { background: var(--green); color: var(--cream); }
+#faucet-panel button:disabled { cursor: default; opacity: .75; }
+#faucet-panel button[hidden] { display: none; }
+#faucet-msg { margin: 8px 0 0; padding: 6px 10px; border-radius: 10px; background: rgba(244,236,235,.9); color: var(--ink); font-size: 13px; line-height: 1.35; }
+#faucet-msg:empty { display: none; }
+#faucet-msg a { color: var(--green); font-weight: 700; }
 @media (max-width: 1300px) { #tock-scene { display: none; } }
 
 #main {
@@ -224,8 +236,13 @@ ol.steps li { margin-bottom: .4em; }
         <a id="arcade-sign" href="slots.html"><h3>ARCADE</h3><p>Now Open!</p></a>
       </div>
     </div>
-    <div id="tock-scene" aria-hidden="true">
+    <div id="tock-scene">
       <canvas id="faucet-canvas" width="400" height="636" data-sheet='{"w":400,"h":636,"cols":10,"frames":60,"fps":12}'></canvas>
+      <div id="faucet-panel">
+        <button id="faucet-open" type="button">Fill my nickels</button>
+        <button id="faucet-claim" type="button" hidden>Fill it</button>
+        <p id="faucet-msg" role="status" aria-live="polite"></p>
+      </div>
     </div>
   </header>
 
@@ -359,5 +376,6 @@ ol.steps li { margin-bottom: .4em; }
 })();
 </script>
 <script src="js/faucet-scene.js"></script>
+<script src="js/faucet-claim.js"></script>
 </body>
 </html>
