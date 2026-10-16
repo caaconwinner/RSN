@@ -87,13 +87,9 @@ a img { border: 0; }
   left: calc(100% + 1vw);
   top: 30px;
   width: min(460px, calc((100vw - 943px) / 2 - 3vw));
-  display: flex;
-  align-items: flex-start;
-  gap: 4%;
-  pointer-events: none;
 }
-#tock-scene .faucet { width: 52%; height: auto; margin-top: 14%; }
-#tock-scene .tock { width: 40%; height: auto; filter: drop-shadow(6px 10px 10px rgba(0,0,0,.45)); }
+#faucet-canvas { display: block; width: 100%; height: auto; opacity: 0; transition: opacity .4s; cursor: pointer; filter: drop-shadow(6px 10px 10px rgba(0,0,0,.45)); }
+#faucet-canvas.ready { opacity: 1; }
 @media (max-width: 1300px) { #tock-scene { display: none; } }
 
 #main {
@@ -229,8 +225,7 @@ ol.steps li { margin-bottom: .4em; }
       </div>
     </div>
     <div id="tock-scene" aria-hidden="true">
-      <img class="faucet" src="img/faucet-drip.webp" alt="">
-      <img class="tock" src="img/tock-idle.webp" alt="">
+      <canvas id="faucet-canvas" width="400" height="636" data-sheet='{"w":400,"h":636,"cols":10,"frames":60,"fps":12}'></canvas>
     </div>
   </header>
 
@@ -363,6 +358,6 @@ ol.steps li { margin-bottom: .4em; }
   addEventListener('scroll', () => { if (scrollY < 60) { links.forEach(a => a.classList.remove('active')); links[0].classList.add('active'); } }, { passive: true });
 })();
 </script>
-
+<script src="js/faucet-scene.js"></script>
 </body>
 </html>
