@@ -65,7 +65,7 @@
       const signed = await w.signTransaction(unsigned);
       say('Sending…');
       const out = await api('POST', { wallet: address, signed: btoa(String.fromCharCode(...signed.serialize())) });
-      countdown(out.nextClaimAt, `Nickels sent! <a href="https://solscan.io/tx/${out.signature}" target="_blank" rel="noopener">View transaction</a>`);
+      countdown(out.nextClaimAt, `Nickels sent! <a href="https://solscan.io/tx/${out.signature}${out.cluster === 'devnet' ? '?cluster=devnet' : ''}" target="_blank" rel="noopener">View transaction</a>`);
     } catch (e) {
       claimBtn.disabled = false;
       if (e.nextClaimAt > Date.now()) return countdown(e.nextClaimAt, e.message);
