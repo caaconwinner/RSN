@@ -84,6 +84,10 @@ const clientIp = req => String(req.headers['x-forwarded-for'] || req.headers['x-
 module.exports = async (req, res) => {
   res.setHeader('cache-control', 'no-store');
   const fail = (code, error, extra) => res.status(code).json({ error, ...extra });
+  // ?selftest checks that the Solana libraries load on this server, before any keys are set up
+  if (req.method === 'GET' && req.query && 'selftest' in req.query) {
+    try { loadLibs(); return res.json({ ok: true, node: process.version }); } catch (e) { return fail(500, String(e && e.message || e), { node: process.version }); }
+  }
   if (!env.FAUCET_SECRET_KEY || !env.RSN_MINT) return fail(503, 'The faucet opens when RSN launches. Check back soon!');
   if (!kvUrl && env.FAUCET_DEV_MEMORY !== '1') return fail(503, 'The faucet is being set up. Check back soon!');
   try { loadLibs(); } catch (e) { console.error('solana libraries failed to load', e); return fail(500, 'The faucet jammed. Try again in a minute.'); }
