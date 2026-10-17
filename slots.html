@@ -58,97 +58,48 @@ header { position: relative; width: 100%; display: flex; justify-content: center
 .sign b { display: block; font-size: 15px; color: var(--rust); font-weight: 400; }
 @media (max-width: 620px) { .sign { position: static; transform: none; margin-top: -6px; } header { flex-direction: column; align-items: center; } }
 
-/* stage: robot + machine */
-.stage { filter: drop-shadow(0 8px 14px rgba(40, 14, 6, .45)); display: flex; align-items: flex-end; justify-content: center; gap: 18px; width: 100%; }
-.tall { width: 128px; height: auto; border-radius: 12px; border: 3px solid var(--green); box-shadow: 0 8px 18px rgba(40, 14, 6, .4); }
+/* stage: Tock + the Blender-rendered machine. The cabinet render has the three reel windows cut out;
+   the reels are a canvas behind it, drawn as lit drums. Positions are fractions of the render (rsn-artwork/blender/slots3d). */
+.stage { display: flex; align-items: flex-end; justify-content: center; width: 100%; }
+.tall { width: 190px; height: auto; margin-right: -24px; position: relative; z-index: 1; filter: drop-shadow(0 10px 12px rgba(40, 14, 6, .45)); }
 @media (max-width: 860px) { .tall { display: none; } }
-
-.cabinet {
-  --cut: 34px;
-  position: relative;
-  width: min(100%, 560px);
-  padding: 30px clamp(14px, 4vw, 34px) 26px;
-  background:
-    radial-gradient(130% 100% at 30% 15%, rgba(255, 225, 210, .12), transparent 55%),
-    radial-gradient(140% 120% at 50% 50%, transparent 55%, rgba(40, 10, 12, .45)),
-    #6e3436 url("img/rustdark.jpg") center / 900px auto;
-  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
-  display: grid; gap: 16px;
+.machine {
+  position: relative; width: min(100%, 600px); aspect-ratio: 1000 / 1280;
+  container-type: inline-size; filter: drop-shadow(0 12px 16px rgba(40, 14, 6, .5));
 }
-.cabinet::before { /* inner riveted plate, like the logo plaque */
-  content: ""; position: absolute; inset: 12px; pointer-events: none; z-index: 0;
-  background:
-    radial-gradient(120% 90% at 35% 20%, rgba(255, 230, 215, .14), transparent 60%),
-    radial-gradient(150% 130% at 50% 45%, transparent 60%, rgba(60, 18, 20, .35)),
-    #93605a url("img/rust.jpg") 30% 40% / 1000px auto;
-  clip-path: polygon(26px 0, calc(100% - 26px) 0, 100% 26px, 100% calc(100% - 26px), calc(100% - 26px) 100%, 26px 100%, 0 calc(100% - 26px), 0 26px);
-  box-shadow: inset 2px 2px 0 rgba(255, 215, 200, .28), inset -2px -2px 0 rgba(40, 8, 10, .45), inset 0 0 22px rgba(50, 12, 14, .35);
+.machine .cab { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; }
+#reels { position: absolute; left: 18.55%; top: 26.49%; width: 59.51%; height: 21.85%; }
+.lever {
+  position: absolute; left: 87.80%; top: 22.73%; width: 12.20%; height: 25.94%; padding: 0; border: 0; cursor: pointer;
+  background: transparent url("img/slots3d/lever.webp") 0 0 / 1000% 100% no-repeat;
 }
-.cabinet > :not(.bolt) { position: relative; z-index: 1; }
-.cabinet > .bolt { z-index: 2; }
-.bolt { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #c9a46b, #5a3a16 70%); box-shadow: 0 1px 1px rgba(0,0,0,.5); }
-.bolt.tl { left: 50px; top: 20px; } .bolt.tr { right: 50px; top: 20px; }
-.bolt.bl { left: 50px; bottom: 20px; } .bolt.br { right: 50px; bottom: 20px; }
-
-.title-plate {
-  font: 400 clamp(15px, 3.6vw, 20px)/1 var(--display); letter-spacing: .14em; text-transform: uppercase;
-  color: #5c2428; text-align: center;
-  text-shadow: 0 1px 0 rgba(255, 215, 200, .45), 0 -1px 0 rgba(30, 6, 8, .55);
+.lever:focus-visible { outline: 3px solid var(--olive); outline-offset: 2px; border-radius: 12px; }
+.lever:disabled { cursor: default; }
+.panel {
+  position: absolute; left: 15.43%; top: 59.22%; width: 65.77%; height: 28.33%;
+  box-sizing: border-box; padding: 3cqw 3.4cqw; display: grid; align-content: space-between; gap: 1.6cqw;
 }
-
-/* reels */
-.window {
-  position: relative;
-  display: grid; grid-template-columns: repeat(3, var(--cell)); gap: 8px; justify-content: center;
-  background: var(--ink); padding: 10px; border-radius: 14px;
-  border: 4px solid var(--green);
-  box-shadow: inset 0 0 18px rgba(0, 0, 0, .8), 0 3px 0 rgba(255, 210, 200, .15);
-}
-.reel {
-  height: calc(var(--cell) * 3); overflow: hidden; border-radius: 8px;
-  background:
-    linear-gradient(90deg, rgba(60, 30, 10, .35), transparent 18%, transparent 82%, rgba(60, 30, 10, .35)),
-    linear-gradient(rgba(231, 204, 154, .35), rgba(231, 204, 154, .35)),
-    #d1a65e url("img/bg.jpg") center / 420px auto;
-  position: relative;
-}
-.reel::after { /* glass shading */
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, rgba(12, 22, 14, .6), transparent 26%, transparent 74%, rgba(12, 22, 14, .6));
-}
-.strip { will-change: transform; }
-.cell { height: var(--cell); display: grid; place-items: center; }
-.cell img, .cell svg { width: 78%; height: 78%; object-fit: contain; filter: drop-shadow(0 3px 3px rgba(40, 14, 6, .5)); }
-.reel.win .strip > .cell:nth-child(2) { animation: glow .5s ease-in-out 4 alternate; }
-@keyframes glow { to { background: rgba(255, 236, 160, .55); box-shadow: inset 0 0 18px rgba(255, 220, 120, .9); } }
-
-.payline { position: absolute; left: 2px; right: 2px; top: 50%; height: 0; border-top: 2px dashed rgba(158, 58, 64, .85); pointer-events: none; }
-.payline::before, .payline::after {
-  content: ""; position: absolute; top: -9px; width: 16px; height: 16px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #ff7a6a, #e01810 55%, #7a0a06);
-  box-shadow: 0 0 8px rgba(255, 40, 20, .8);
-}
-.payline::before { left: -12px; } .payline::after { right: -12px; }
 
 /* readouts */
-.readouts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.readouts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2cqw; }
 .lcd {
-  background: var(--ink); border: 3px solid var(--green); border-radius: 10px;
-  padding: 6px 10px 4px; text-align: center; min-width: 0;
+  background: #070b08; border: max(2px, .5cqw) solid var(--green); border-radius: 1.6cqw;
+  padding: 1cqw 1.4cqw .6cqw; text-align: center; min-width: 0;
+  box-shadow: inset 0 0 1.6cqw rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 220, 160, .18);
 }
-.lcd span { display: block; font: 600 10px/1.2 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--sand); opacity: .8; }
-.lcd output { display: block; font: 400 clamp(20px, 5.5vw, 28px)/1.15 var(--mono); color: var(--olive); font-variant-numeric: tabular-nums; text-shadow: 0 0 8px rgba(188, 186, 94, .5); }
+.lcd span { display: block; font: 600 max(8px, 1.8cqw)/1.2 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--sand); opacity: .8; }
+.lcd output { display: block; font: 400 max(15px, 4.6cqw)/1.15 var(--mono); color: var(--olive); font-variant-numeric: tabular-nums; text-shadow: 0 0 8px rgba(188, 186, 94, .5); }
 .lcd.hot output { color: #ffe08a; text-shadow: 0 0 12px rgba(255, 210, 90, .9); }
 
-.msg { min-height: 1.4em; text-align: center; font: 400 14px/1.3 var(--display); color: #fff1d6; text-shadow: 0 1px 2px rgba(40, 8, 10, .8); letter-spacing: .04em; }
+.msg { min-height: 1.3em; text-align: center; font: 400 max(11px, 2.5cqw)/1.3 var(--display); color: #fff1d6; text-shadow: 0 1px 2px rgba(0, 0, 0, .8); letter-spacing: .04em; }
 
 /* controls */
-.controls { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
+.controls { display: flex; gap: 2cqw; justify-content: center; align-items: center; }
 .pill {
-  font: 400 15px/1 var(--display); color: var(--ink);
+  font: 400 max(13px, 2.6cqw)/1 var(--display); color: var(--ink);
   background: var(--cream); border: 3px solid var(--ink); border-radius: 999px;
-  padding: 9px 16px; cursor: pointer; box-shadow: 0 3px 0 var(--ink);
-  transition: transform .08s, box-shadow .08s, background .15s;
+  padding: max(8px, 1.5cqw) max(12px, 2.6cqw); cursor: pointer; box-shadow: 0 3px 0 var(--ink);
+  transition: transform .08s, box-shadow .08s, background .15s; white-space: nowrap;
 }
 .pill:hover { background: #fff8f4; }
 .pill:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
@@ -156,16 +107,22 @@ header { position: relative; width: 100%; display: flex; justify-content: center
 .pill:focus-visible, .spin:focus-visible { outline: 3px solid var(--olive); outline-offset: 3px; }
 .pill.dark { background: var(--green); color: var(--cream); }
 .spin {
-  font: 400 clamp(20px, 5vw, 24px)/1 var(--display); letter-spacing: .1em;
+  font: 400 max(18px, 4cqw)/1 var(--display); letter-spacing: .1em;
   color: var(--cream); background: radial-gradient(circle at 40% 30%, #c4545a, var(--rust) 55%, #6d1e23);
-  border: 3px solid var(--ink); border-radius: 999px; padding: 14px 34px; cursor: pointer;
+  border: 3px solid var(--ink); border-radius: 999px; padding: max(11px, 2.2cqw) max(24px, 5.4cqw); cursor: pointer;
   box-shadow: 0 5px 0 var(--ink), 0 0 0 4px rgba(244, 236, 235, .25);
   transition: transform .08s, box-shadow .08s;
 }
 .spin:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 0 0 var(--ink), 0 0 0 4px rgba(244, 236, 235, .25); }
 .spin:disabled { filter: grayscale(.5) brightness(.85); cursor: default; }
-.betbox { display: flex; align-items: center; gap: 6px; }
-.betbox .pill { padding: 9px 13px; }
+.betbox { display: flex; align-items: center; gap: 1cqw; }
+
+/* phones: the panel keeps the readouts and message; the buttons drop below the machine */
+@container (max-width: 480px) {
+  .panel { align-content: space-evenly; }
+  .controls { position: absolute; left: -23.5%; right: -23.5%; top: calc(143.9% + 10px); gap: 10px; }
+}
+@media (max-width: 528px) { .machine { margin-bottom: 70px; } }
 
 /* paytable */
 .card {
@@ -179,16 +136,16 @@ header { position: relative; width: 100%; display: flex; justify-content: center
 @media (max-width: 460px) { .pays { grid-template-columns: minmax(0, 1fr); } }
 .pays li { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px dashed rgba(82, 22, 25, .25); min-width: 0; }
 .pays .icons { display: flex; gap: 2px; flex: none; }
-.pays .icons img, .pays .icons svg { width: 26px; height: 26px; object-fit: contain; }
+.pays .icons img { width: 28px; height: 28px; object-fit: contain; }
 .pays .name { flex: 1; min-width: 0; font-size: 13px; color: #3b2a26; }
 .pays b { font: 400 15px/1 var(--mono); color: var(--rust); font-variant-numeric: tabular-nums; }
 .fine { font-size: 12.5px; color: #5a4440; }
 
 /* nickel shower */
 .shower { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
-.coin { position: absolute; top: -60px; width: 40px; height: 40px; animation: fall linear forwards; }
+.coin { position: absolute; top: -60px; width: 44px; height: 44px; animation: fall linear forwards; }
 @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
-@media (prefers-reduced-motion: reduce) { .coin { display: none; } .reel.win .strip > .cell:nth-child(2) { animation: none; background: rgba(188, 186, 94, .55); } }
+@media (prefers-reduced-motion: reduce) { .coin { display: none; } }
 .back { display: inline-block; margin: 0 0 4px; font: 400 14px/1 var(--display); color: var(--ink); background: var(--cream); border: 3px solid var(--ink); border-radius: 999px; padding: 8px 14px; text-decoration: none; box-shadow: 0 3px 0 var(--ink); justify-self: start; }
 .back:hover { background: #fff8f4; }
 </style>
@@ -203,29 +160,26 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   </header>
 
   <div class="stage">
-    <img class="tall" src="img/robot-tall.png" alt="">
-    <section class="cabinet" aria-label="Slot machine">
-      <i class="bolt tl"></i><i class="bolt tr"></i><i class="bolt bl"></i><i class="bolt br"></i>
-      <div class="title-plate">Nickel Jiggy Slots</div>
-      <div class="window">
-        <div class="reel" id="r0"><div class="strip"></div></div>
-        <div class="reel" id="r1"><div class="strip"></div></div>
-        <div class="reel" id="r2"><div class="strip"></div></div>
-        <div class="payline"></div>
-      </div>
-      <div class="readouts">
-        <div class="lcd"><span>Nickels</span><output id="credits">1000</output></div>
-        <div class="lcd"><span>Bet</span><output id="bet">1</output></div>
-        <div class="lcd" id="winbox"><span>Win</span><output id="win">0</output></div>
-      </div>
-      <div class="msg" id="msg" aria-live="polite">Insert nickel. No humans.</div>
-      <div class="controls">
-        <div class="betbox">
-          <button class="pill" id="betDown" aria-label="Lower bet">−</button>
-          <button class="pill" id="betUp" aria-label="Raise bet">+</button>
+    <img class="tall" src="img/slots3d/tock.webp" alt="" width="380" height="1153">
+    <section class="machine" aria-label="Slot machine">
+      <canvas id="reels" role="img" aria-label="Reels"></canvas>
+      <img class="cab" src="img/slots3d/cabinet.webp" alt="" width="1000" height="1280">
+      <button class="lever" id="lever" aria-label="Pull the lever to spin"></button>
+      <div class="panel">
+        <div class="readouts">
+          <div class="lcd"><span>Nickels</span><output id="credits">1000</output></div>
+          <div class="lcd"><span>Bet</span><output id="bet">1</output></div>
+          <div class="lcd" id="winbox"><span>Win</span><output id="win">0</output></div>
         </div>
-        <button class="spin" id="spin">SPIN</button>
-        <button class="pill dark" id="sound" aria-pressed="true">Sound on</button>
+        <div class="msg" id="msg" aria-live="polite">Insert nickel. No humans.</div>
+        <div class="controls">
+          <div class="betbox">
+            <button class="pill" id="betDown" aria-label="Lower bet">−</button>
+            <button class="pill" id="betUp" aria-label="Raise bet">+</button>
+          </div>
+          <button class="spin" id="spin">SPIN</button>
+          <button class="pill dark" id="sound" aria-pressed="true">Sound on</button>
+        </div>
       </div>
     </section>
   </div>
@@ -234,37 +188,28 @@ header { position: relative; width: 100%; display: flex; justify-content: center
     <h2 id="pt">Paytable</h2>
     <p>Line up symbols on the red center line. Wins are multiplied by your bet.</p>
     <ul class="pays" id="pays"></ul>
-    <p class="fine">Play money only: these nickels have no cash value and can't be bought or cashed out. Payout rate is about 94% over the long run, like a real machine. Out of nickels? The robot refills you for free. Press Space to spin.</p>
+    <p class="fine">Play money only: these nickels have no cash value and can't be bought or cashed out. Payout rate is about 94% over the long run, like a real machine. Out of nickels? The robot refills you for free. Press Space or pull the lever to spin. Machine and symbols rendered in Blender; the robot is <a href="https://blendswap.com/blend/3078">Tock The Robot</a> by snowcapstudios, used under <a href="https://creativecommons.org/licenses/by/3.0/">CC-BY</a>.</p>
   </section>
 </div>
 <div class="shower" id="shower"></div>
 
 <script>
 (() => {
-  // ---- symbols ----
-  const svg = {
-    nickel: `<svg viewBox="0 0 100 100"><defs><radialGradient id="ng" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#c9ccd0"/><stop offset="1" stop-color="#6c7178"/></radialGradient></defs><circle cx="50" cy="50" r="44" fill="url(#ng)" stroke="#4d5258" stroke-width="3"/><circle cx="50" cy="50" r="35" fill="none" stroke="#8b9097" stroke-width="2" stroke-dasharray="3 3"/><text x="50" y="62" text-anchor="middle" font-family="Audiowide, Arial Black, sans-serif" font-size="34" fill="#5a5f66">5¢</text></svg>`,
-    chest: `<svg viewBox="0 0 100 100"><defs><radialGradient id="cg" cx=".38" cy=".33" r=".7"><stop offset="0" stop-color="#ffb3a6"/><stop offset=".3" stop-color="#ff2a14"/><stop offset="1" stop-color="#7a0905"/></radialGradient><radialGradient id="cb" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#e2c27c"/><stop offset="1" stop-color="#6b4a1c"/></radialGradient></defs><circle cx="50" cy="50" r="46" fill="url(#cb)"/><circle cx="50" cy="50" r="46" fill="none" stroke="#3d2a10" stroke-width="2"/><g fill="#3d2a10"><circle cx="50" cy="10" r="3"/><circle cx="90" cy="50" r="3"/><circle cx="50" cy="90" r="3"/><circle cx="10" cy="50" r="3"/></g><circle cx="50" cy="50" r="30" fill="url(#cg)" stroke="#4a0703" stroke-width="2"/><ellipse cx="41" cy="39" rx="9" ry="6" fill="#fff" opacity=".55"/></svg>`,
-    gear: `<svg viewBox="0 0 100 100"><defs><radialGradient id="gg" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#e9cf8e"/><stop offset=".6" stop-color="#b08436"/><stop offset="1" stop-color="#5f4316"/></radialGradient></defs><path fill="url(#gg)" stroke="#3d2a10" stroke-width="2" d="${gearPath(50,50,44,34,10)}"/><circle cx="50" cy="50" r="13" fill="#F4ECEB" stroke="#3d2a10" stroke-width="2"/></svg>`,
-    oil: `<svg viewBox="0 0 100 100"><defs><linearGradient id="og" x1="0" x2="1"><stop offset="0" stop-color="#2c4a33"/><stop offset=".5" stop-color="#182B1C"/><stop offset="1" stop-color="#0C160E"/></linearGradient></defs><path d="M50 6 C50 6 18 46 18 64 a32 32 0 0 0 64 0 C82 46 50 6 50 6Z" fill="url(#og)" stroke="#0C160E" stroke-width="2"/><path d="M34 60 q0 -14 12 -30" stroke="#BCBA5E" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/><text x="50" y="80" text-anchor="middle" font-family="Audiowide, Arial Black, sans-serif" font-size="15" fill="#BCBA5E">LUBE</text></svg>`,
-  };
-  function gearPath(cx, cy, ro, ri, teeth) {
-    let d = ''; const step = Math.PI * 2 / teeth;
-    for (let i = 0; i < teeth; i++) {
-      const a = i * step, pts = [[ri, a], [ro, a + step * .15], [ro, a + step * .45], [ri, a + step * .6]];
-      pts.forEach(([r, t], j) => { d += (i === 0 && j === 0 ? 'M' : 'L') + (cx + r * Math.cos(t)).toFixed(1) + ' ' + (cy + r * Math.sin(t)).toFixed(1) + ' '; });
-    }
-    return d + 'Z';
-  }
+  // ---- symbols (3D renders from Blender; robot is Tock The Robot by snowcapstudios, CC-BY) ----
   const SYM = {
-    rsn:      { name: 'RSN plaque', html: '<img src="img/sym-rsn.png" alt="RSN">', pay: 250 },
-    nohumans: { name: 'No humans', html: '<img src="img/sym-nohumans.png" alt="No humans">', pay: 100 },
-    robot:    { name: 'Robot', html: '<img src="img/sym-robot.png" alt="Robot">', pay: 50 },
-    chest:    { name: 'Chest light', html: svg.chest, pay: 20 },
-    gear:     { name: 'Gear', html: svg.gear, pay: 10 },
-    oil:      { name: 'Lube', html: svg.oil, pay: 5 },
-    nickel:   { name: 'Nickel', html: svg.nickel },
+    rsn:      { name: 'RSN plaque', pay: 250 },
+    nohumans: { name: 'No humans', pay: 100 },
+    robot:    { name: 'Robot', pay: 50 },
+    chest:    { name: 'Chest light', pay: 20 },
+    gear:     { name: 'Gear', pay: 10 },
+    oil:      { name: 'Lube', pay: 5 },
+    nickel:   { name: 'Nickel' },
   };
+  const src = k => `img/slots3d/sym-${k}.webp`;
+  const IMG = {};
+  const loaded = Promise.all(Object.keys(SYM).map(k => new Promise(res => {
+    const im = new Image(); im.onload = im.onerror = res; im.src = src(k); IMG[k] = im;
+  })));
   const NICKEL_PAY = [0, 1, 3, 25]; // by count of nickels on the line
   // 23 stops per reel; weights tuned for ~94% return
   const WEIGHTS = { rsn: 1, nohumans: 2, robot: 3, chest: 4, gear: 5, oil: 5, nickel: 3 };
@@ -293,23 +238,112 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   let betIdx = store.get('betIdx', 0);
   let soundOn = store.get('sound', true);
   let stops = store.get('stops', [0, 5, 11]);
+  if (!Array.isArray(stops) || stops.length !== 3) stops = [0, 5, 11];
   let spinning = false;
-
   const $ = id => document.getElementById(id);
-  const reels = [0, 1, 2].map(i => $('r' + i));
-  const cellH = () => reels[0].querySelector('.cell')?.offsetHeight || 100;
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function cellsAround(r, stop, extraBefore = 0) {
-    // returns symbol keys from (stop-1-extraBefore) to (stop+1)
-    const s = STRIPS[r], n = s.length, out = [];
-    for (let i = -1 - extraBefore; i <= 1; i++) out.push(s[((stop + i) % n + n) % n]);
-    return out;
+  // ---- reels: three lit cylinders on one canvas behind the cabinet's cut-out windows ----
+  // window rects as fractions of the canvas (from the Blender camera, see layout.json)
+  const WIN = [[0.0, 0.0, 0.302, 1.0], [0.349, 0.0, 0.302, 1.0], [0.698, 0.0, 0.302, 1.0]];
+  const canvas = $('reels'), ctx = canvas.getContext('2d');
+  const reel = [0, 1, 2].map(r => ({ pos: stops[r], from: 0, to: 0, t0: 0, dur: 0, moving: false, win: false, done: null }));
+  const STEP = 0.74;           // radians between symbols on the drum
+  let W = 0, H = 0, dpr = 1, winT0 = 0, raf = 0;
+
+  function size() {
+    const r = canvas.getBoundingClientRect();
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = Math.round(r.width * dpr); H = Math.round(r.height * dpr);
+    if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
+    draw(performance.now());
   }
-  function renderReel(r, keys) {
-    const strip = reels[r].querySelector('.strip');
-    strip.style.transition = 'none';
-    strip.style.transform = 'translateY(0)';
-    strip.innerHTML = keys.map(k => `<div class="cell">${SYM[k].html}</div>`).join('');
+  const mod = (a, n) => ((a % n) + n) % n;
+  function drawReel(r, now) {
+    const [fx, fy, fw, fh] = WIN[r];
+    const x = fx * W, y = fy * H, w = fw * W, h = fh * H, cy = y + h / 2;
+    const Rad = h * 0.62, s = Math.min(w * 0.86, Rad * STEP * 1.06);
+    const st = reel[r], strip = STRIPS[r], n = strip.length;
+    ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+    // drum surface: warm parchment band
+    const bg = ctx.createLinearGradient(x, 0, x + w, 0);
+    bg.addColorStop(0, '#b98a4a'); bg.addColorStop(.18, '#ecd3a0'); bg.addColorStop(.5, '#f6e6c2'); bg.addColorStop(.82, '#ecd3a0'); bg.addColorStop(1, '#b98a4a');
+    ctx.fillStyle = bg; ctx.fillRect(x, y, w, h);
+    // speed for motion blur (stops per frame)
+    const v = st.moving ? Math.abs(velocity(st, now)) : 0;
+    const blur = reduce() ? 0 : Math.min(1, v / 0.35);
+    const base = Math.floor(st.pos);
+    for (let k = base - 2; k <= base + 3; k++) {
+      const th = (k - st.pos) * STEP;
+      if (Math.abs(th) > 1.45) continue;
+      const key = strip[mod(k, n)], im = IMG[key];
+      const sy = cy + Rad * Math.sin(th), sh = s * Math.cos(th);
+      if (st.win && k === Math.round(st.pos)) {
+        const p = .55 + .45 * Math.sin((now - winT0) / 160);
+        const g = ctx.createRadialGradient(x + w / 2, sy, 0, x + w / 2, sy, s * .75);
+        g.addColorStop(0, `rgba(255,230,140,${.85 * p})`); g.addColorStop(1, 'rgba(255,200,90,0)');
+        ctx.fillStyle = g; ctx.fillRect(x, sy - s, w, s * 2);
+      }
+      if (!im || !im.naturalWidth) continue;
+      if (blur > .05) {
+        const taps = 5, spread = s * .5 * blur;
+        ctx.globalAlpha = 1 / taps * 1.6;
+        for (let i = 0; i < taps; i++) ctx.drawImage(im, x + (w - s) / 2, sy - sh / 2 + (i / (taps - 1) - .5) * spread, s, sh);
+        ctx.globalAlpha = 1;
+      } else ctx.drawImage(im, x + (w - s) / 2, sy - sh / 2, s, sh);
+    }
+    // cylinder shading: dark at the top and bottom, soft highlight just above the center
+    const sh = ctx.createLinearGradient(0, y, 0, y + h);
+    sh.addColorStop(0, 'rgba(20,8,2,.92)'); sh.addColorStop(.2, 'rgba(30,12,4,.35)'); sh.addColorStop(.38, 'rgba(255,250,235,.10)');
+    sh.addColorStop(.5, 'rgba(0,0,0,0)'); sh.addColorStop(.75, 'rgba(30,12,4,.3)'); sh.addColorStop(1, 'rgba(20,8,2,.95)');
+    ctx.fillStyle = sh; ctx.fillRect(x, y, w, h);
+    // glass reflection
+    const gl = ctx.createLinearGradient(x, y, x + w, y + h);
+    gl.addColorStop(0, 'rgba(255,255,255,.14)'); gl.addColorStop(.35, 'rgba(255,255,255,0)'); gl.addColorStop(.62, 'rgba(255,255,255,0)'); gl.addColorStop(.7, 'rgba(255,255,255,.07)'); gl.addColorStop(.78, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gl; ctx.fillRect(x, y, w, h);
+    // payline
+    ctx.fillStyle = 'rgba(200,30,24,.75)'; ctx.fillRect(x, cy - Math.max(1, dpr), w, Math.max(2, 2 * dpr));
+    ctx.restore();
+  }
+  function draw(now) { if (!W) return; ctx.clearRect(0, 0, W, H); for (let r = 0; r < 3; r++) drawReel(r, now); }
+
+  // spin easing: fast start, long coast, then a small mechanical bounce past the stop and back
+  function posAt(st, p) {
+    const over = st.to + Math.sign(st.to - st.from) * .22;
+    if (p < .9) { const q = p / .9; return st.from + (over - st.from) * (1 - Math.pow(1 - q, 3)); }
+    const q = (p - .9) / .1; return over + (st.to - over) * (1 - Math.pow(1 - q, 2));
+  }
+  function velocity(st, now) {
+    const p = Math.max(0, Math.min(1, (now - st.t0) / st.dur));
+    return posAt(st, Math.min(1, p + 16 / st.dur)) - posAt(st, p);
+  }
+  function tick(now) {
+    let busy = false;
+    for (const st of reel) {
+      if (!st.moving) continue;
+      const p = Math.max(0, Math.min(1, (now - st.t0) / st.dur));
+      st.pos = posAt(st, p);
+      if (p >= 1) { st.moving = false; st.pos = st.to; const d = st.done; st.done = null; d && d(); }
+      else busy = true;
+    }
+    const glowing = reel.some(st => st.win) && now - winT0 < 2600 && !reduce();
+    draw(now);
+    raf = busy || glowing ? requestAnimationFrame(tick) : 0;
+  }
+  const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+
+  // ---- lever: 10 Blender frames, pull down and spring back ----
+  const lever = $('lever');
+  function pullLever() {
+    if (reduce()) return;
+    const N = 10, t0 = performance.now(), down = 170, up = 320;
+    const step = now => {
+      const t = now - t0;
+      const f = t < down ? t / down : Math.max(0, 1 - (t - down) / up);
+      lever.style.backgroundPositionX = (Math.round(f * (N - 1)) / (N - 1) * 100) + '%';
+      if (t < down + up) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
   }
 
   // ---- sound ----
@@ -337,9 +371,10 @@ header { position: relative; width: 100%; display: flex; justify-content: center
     $('sound').setAttribute('aria-pressed', soundOn);
     const broke = credits < bet();
     $('spin').textContent = broke && credits < BETS[0] ? 'REFILL' : 'SPIN';
-    $('spin').disabled = spinning;
+    $('spin').disabled = spinning; lever.disabled = spinning;
   }
   function save() { store.set('credits', credits); store.set('betIdx', betIdx); store.set('sound', soundOn); store.set('stops', stops); }
+  function describe() { canvas.setAttribute('aria-label', 'Reels show ' + stops.map((s, r) => SYM[STRIPS[r][s]].name).join(', ')); }
 
   function countUp(el, to, ms) {
     const start = performance.now();
@@ -347,10 +382,10 @@ header { position: relative; width: 100%; display: flex; justify-content: center
     requestAnimationFrame(step);
   }
   function shower(n) {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (reduce()) return;
     const box = $('shower');
     for (let i = 0; i < n; i++) {
-      const c = document.createElement('div'); c.className = 'coin'; c.innerHTML = svg.nickel.replace(/id="ng"/, `id="ng${i}"`).replace('url(#ng)', `url(#ng${i})`);
+      const c = document.createElement('img'); c.className = 'coin'; c.src = src('nickel'); c.alt = '';
       c.style.left = Math.random() * 100 + 'vw'; c.style.animationDuration = 1.6 + Math.random() * 1.6 + 's'; c.style.animationDelay = Math.random() * .8 + 's';
       box.appendChild(c); setTimeout(() => c.remove(), 4500);
     }
@@ -365,38 +400,23 @@ header { position: relative; width: 100%; display: flex; justify-content: center
       while (credits < bet()) betIdx--; updateUI(); save();
     }
     spinning = true; credits -= bet(); $('win').value = 0; $('winbox').classList.remove('hot');
-    reels.forEach(r => r.classList.remove('win'));
+    reel.forEach(st => st.win = false);
     $('msg').textContent = 'Spinning…'; updateUI();
-    tone(300, .08, 'square', .04);
+    tone(300, .08, 'square', .04); pullLever();
 
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const rm = reduce();
     const newStops = STRIPS.map(s => Math.floor(Math.random() * s.length));
-    const h = cellH();
+    const now = performance.now() + (rm ? 0 : 140);
     let done = 0;
-    reels.forEach((reel, r) => {
+    reel.forEach((st, r) => {
       const n = STRIPS[r].length;
-      const loops = reduce ? 0 : 2 + r;
-      // distance travelled downward (strip scrolls down = earlier stops appear from top)
-      let dist = ((stops[r] - newStops[r]) % n + n) % n + loops * n;
+      let dist = mod(stops[r] - newStops[r], n) + (rm ? 0 : (3 + r) * n);
       if (dist === 0) dist = n;
-      // build strip: new window at top, followed by `dist` symbols leading to the old window at the bottom
-      const keys = cellsAround(r, stops[r], dist);
-      const strip = reel.querySelector('.strip');
-      strip.style.transition = 'none';
-      strip.innerHTML = keys.map(k => `<div class="cell">${SYM[k].html}</div>`).join('');
-      strip.style.transform = `translateY(${-dist * h}px)`;
-      strip.offsetHeight; // reflow
-      const dur = reduce ? .25 : 1.1 + r * .45;
-      strip.style.transition = `transform ${dur}s cubic-bezier(.2, .7, .25, 1.06)`;
-      strip.style.transform = 'translateY(0)';
-      const finish = () => {
-        strip.removeEventListener('transitionend', finish);
-        renderReel(r, cellsAround(r, newStops[r]));
-        clunk();
-        if (++done === 3) settle(newStops);
-      };
-      strip.addEventListener('transitionend', finish);
+      // drum turns downward: earlier stops come in from the top
+      st.from = stops[r]; st.to = stops[r] - dist; st.t0 = now; st.dur = rm ? 250 : 1300 + r * 480; st.moving = true;
+      st.done = () => { st.pos = st.to = newStops[r]; clunk(); if (++done === 3) settle(newStops); };
     });
+    kick();
   }
 
   function settle(newStops) {
@@ -408,15 +428,15 @@ header { position: relative; width: 100%; display: flex; justify-content: center
       countUp($('win'), win, Math.min(1500, 300 + win * 4));
       $('winbox').classList.add('hot');
       const three = line[0] === line[1] && line[1] === line[2];
-      if (three) reels.forEach(r => r.classList.add('win'));
-      else reels.forEach((r, i) => { if (line[i] === 'nickel') r.classList.add('win'); });
+      reel.forEach((st, i) => st.win = three || line[i] === 'nickel');
+      winT0 = performance.now(); kick();
       $('msg').textContent = mult >= 250 ? `JACKPOT! ${win} nickels!` : mult >= 50 ? `Big win: ${win} nickels!` : `You win ${win} nickel${win === 1 ? '' : 's'}.`;
       winJingle(mult >= 50);
       if (mult >= 20) shower(Math.min(60, 10 + mult / 4));
     } else {
       $('msg').textContent = QUIPS[Math.floor(Math.random() * QUIPS.length)];
     }
-    spinning = false; save(); updateUI();
+    spinning = false; describe(); save(); updateUI(); draw(performance.now());
   }
 
   // ---- paytable ----
@@ -426,20 +446,21 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   $('pays').innerHTML = rows.map(([k, n]) => {
     const pay = k === 'nickel' ? NICKEL_PAY[n] : SYM[k].pay;
     const label = k === 'nickel' && n < 3 ? `Any ${n} ${n === 1 ? 'Nickel' : 'Nickels'}` : `3 × ${SYM[k].name}`;
-    return `<li><span class="icons">${Array(n).fill(SYM[k].html.replace(/id="(\w+)"/g, `id="$1p${k}${n}"`).replace(/url\(#(\w+)\)/g, `url(#$1p${k}${n})`)).join('')}</span><span class="name">${label}</span><b>×${pay}</b></li>`;
+    return `<li><span class="icons">${Array(n).fill(`<img src="${src(k)}" alt="">`).join('')}</span><span class="name">${label}</span><b>×${pay}</b></li>`;
   }).join('');
 
   // ---- wire up ----
   $('spin').addEventListener('click', spin);
+  lever.addEventListener('click', spin);
   $('betDown').addEventListener('click', () => { if (betIdx > 0) { betIdx--; tone(500, .05); save(); updateUI(); } });
   $('betUp').addEventListener('click', () => { if (betIdx < BETS.length - 1) { betIdx++; tone(700, .05); save(); updateUI(); } });
   $('sound').addEventListener('click', () => { soundOn = !soundOn; save(); updateUI(); tone(600, .08); });
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); spin(); }
   });
-
-  reels.forEach((_, r) => renderReel(r, cellsAround(r, stops[r])));
-  updateUI();
+  new ResizeObserver(size).observe(canvas);
+  loaded.then(() => size());
+  describe(); updateUI();
 })();
 </script>
 
