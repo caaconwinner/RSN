@@ -102,7 +102,14 @@ a img { border: 0; }
 #faucet-msg { margin: 8px 0 0; padding: 6px 10px; border-radius: 10px; background: rgba(244,236,235,.9); color: var(--ink); font-size: 13px; line-height: 1.35; }
 #faucet-msg:empty { display: none; }
 #faucet-msg a { color: var(--green); font-weight: 700; }
-@media (max-width: 1300px) { #tock-scene { display: none; } }
+/* narrower screens: no wall space beside the header, so Tock and the faucet stand under the logo with the buttons beside them */
+@media (max-width: 1300px) {
+  #tock-scene { position: static; width: auto; margin: 0 auto; padding-bottom: 16%; /* clear the struts under the header */ display: flex; align-items: center; justify-content: center; gap: 8px; }
+  #faucet-canvas { width: min(200px, 44vw); flex: none; }
+  #faucet-panel { margin: 0; width: min(220px, 46vw); }
+  #faucet-panel button { font-size: 15px; padding: 10px 18px; }
+  #faucet-msg { font-size: 14px; }
+}
 
 #main {
   white-space: nowrap;
@@ -206,7 +213,8 @@ ol.steps li { margin-bottom: .4em; }
 /* phones: the 2015 theme swapped the pipe menu for a dropdown; here it becomes a row of pills */
 @media (max-width: 720px) {
   body { background-attachment: scroll; background-size: cover; }
-  #header { margin-top: 16px; margin-bottom: 58px; background: none; }
+  #header { margin-top: 16px; margin-bottom: 0; background: none; }
+  #tock-scene { margin-top: 64px; padding-bottom: 0; } /* room for the ARCADE sign hanging under the logo */
   #header-wrapper { margin: 0; }
   #arcade-sign { position: static; width: auto; min-height: 0; display: inline-block; margin: 6px auto 0; padding: 6px 14px; }
   #arcade-sign h3 { font-size: 13px; } #arcade-sign p { font-size: 11px; }

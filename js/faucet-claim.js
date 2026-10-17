@@ -49,9 +49,20 @@
     openBtn.hidden = true; claimBtn.hidden = false;
   });
 
+  // arriving from a wallet app link (?faucet): the valve is already opening, so skip straight to Fill it
+  if (new URLSearchParams(location.search).has('faucet')) openBtn.click();
+
   claimBtn.addEventListener('click', async () => {
     const w = wallet();
-    if (!w) { say('You need a Solana wallet such as <a href="https://phantom.app/" target="_blank" rel="noopener">Phantom</a> or <a href="https://solflare.com/" target="_blank" rel="noopener">Solflare</a>.'); return; }
+    if (!w) {
+      // phone browsers have no wallet extension: reopen this page inside the wallet app's own browser
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        const here = new URL(location.href); here.searchParams.set('faucet', '');
+        const page = encodeURIComponent(here.href), ref = encodeURIComponent(location.origin);
+        say(`Open this page in your wallet app to fill up:<br><a href="https://phantom.app/ul/browse/${page}?ref=${ref}">Open in Phantom</a> · <a href="https://solflare.com/ul/v1/browse/${page}?ref=${ref}">Open in Solflare</a>`);
+      } else say('You need a Solana wallet such as <a href="https://phantom.app/" target="_blank" rel="noopener">Phantom</a> or <a href="https://solflare.com/" target="_blank" rel="noopener">Solflare</a>.');
+      return;
+    }
     claimBtn.disabled = true;
     try {
       say('Connecting your wallet…');
