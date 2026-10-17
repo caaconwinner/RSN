@@ -397,17 +397,26 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   function stopTheme() { if (!theme) return; const t = theme; theme = null; try { t.g.gain.setTargetAtTime(0, ac.currentTime, .1); t.s.stop(ac.currentTime + .5); } catch {} }
   function hush() { live.forEach(h => { try { h.s.stop(); } catch {} }); live.clear(); whir = null; }
   function stopWhir() { if (!whir) return; const w = whir; whir = null; try { w.g.gain.setTargetAtTime(0, ac.currentTime, .05); w.s.stop(ac.currentTime + .3); } catch {} }
-  // the welcome plays once per visit, on the first tap (browsers keep pages silent until then)
+  // the welcome plays once per visit, on the first tap (browsers keep pages silent until then).
+  // Phones only allow audio from touchend/click, not pointerdown, so those events unlock the audio
+  // and the welcome waits for it to be running; it only counts as heard once it has actually started.
+  const unlock = () => { if (soundOn || musicOn) try { audio(); } catch {} };
+  ['touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, unlock, { capture: true, passive: true }));
+  const running = () => ac.state === 'running' ? Promise.resolve() : new Promise(res => {
+    const h = () => { if (ac.state === 'running') { ac.removeEventListener('statechange', h); res(); } };
+    ac.addEventListener('statechange', h);
+  });
   function welcome() {
-    let seen = false; try { seen = sessionStorage.getItem('rsn-welcome') === '1'; sessionStorage.setItem('rsn-welcome', '1'); } catch {}
+    let seen = false; try { seen = sessionStorage.getItem('rsn-welcome') === '1'; } catch {}
     if ((seen || !soundOn) && !musicOn) return;
     const intro = !seen && soundOn;
     if (intro) announcing = true;  // hold every other sound from this first tap on
     try {
       audio();
-      decoded.then(() => {
+      decoded.then(running).then(() => {
         announcing = false;
         if (intro && play('welcome', .9)) {
+          try { sessionStorage.setItem('rsn-welcome', '1'); } catch {}
           announcing = true;
           setTimeout(() => { announcing = false; startTheme(); }, (buf.welcome.duration - .8) * 1000);
         } else startTheme();
