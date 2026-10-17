@@ -128,5 +128,9 @@ const deposit = async (session, kp, amount) => {
 
   r = await call('GET', null, { wallet: player.publicKey.toBase58() });
   check(r.balance === bal, 'GET shows the balance', r.balance);
+  const mint = process.env.RSN_MINT; process.env.RSN_MINT = w3.Keypair.generate().publicKey.toBase58();
+  r = await call('GET', null, { wallet: player.publicKey.toBase58() });
+  check(r.balance === 0, 'a new mint (relaunch) starts balances at zero');
+  process.env.RSN_MINT = mint;
   process.exit(process.exitCode || 0);
 })();
