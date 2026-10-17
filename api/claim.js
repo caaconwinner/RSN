@@ -17,17 +17,19 @@
 //   KV_REST_API_URL + KV_REST_API_TOKEN (or UPSTASH_REDIS_REST_URL + _TOKEN)  claim records, Upstash Redis
 //   FAUCET_DEV_MEMORY=1   keep claim records in memory instead (local testing only)
 const crypto = require('crypto');
-const bs58 = require('bs58');
-const {
-  Connection, Keypair, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction, ComputeBudgetProgram,
-} = require('@solana/web3.js');
-const {
-  getMint, getAssociatedTokenAddressSync, createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction,
-} = require('@solana/spl-token');
+// The Solana libraries load on first use, so the "opens at launch" answer never depends on them.
+let bs58, Connection, Keypair, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction, ComputeBudgetProgram;
+let getMint, getAssociatedTokenAddressSync, createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction, MEMO;
+const loadLibs = () => {
+  if (MEMO) return;
+  bs58 = require('bs58');
+  ({ Connection, Keypair, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction, ComputeBudgetProgram } = require('@solana/web3.js'));
+  ({ getMint, getAssociatedTokenAddressSync, createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction } = require('@solana/spl-token'));
+  MEMO = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
+};
 
 const env = process.env;
 const num = (v, d) => (v === undefined || v === '' || isNaN(+v) ? d : +v);
-const MEMO = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 const TX_TTL = 120e3; // a built transaction must come back signed within 2 minutes
 
 // --- claim records: Upstash Redis over REST, or memory for local tests ---
@@ -84,6 +86,7 @@ module.exports = async (req, res) => {
   const fail = (code, error, extra) => res.status(code).json({ error, ...extra });
   if (!env.FAUCET_SECRET_KEY || !env.RSN_MINT) return fail(503, 'The faucet opens when RSN launches. Check back soon!');
   if (!kvUrl && env.FAUCET_DEV_MEMORY !== '1') return fail(503, 'The faucet is being set up. Check back soon!');
+  try { loadLibs(); } catch (e) { console.error('solana libraries failed to load', e); return fail(500, 'The faucet jammed. Try again in a minute.'); }
 
   const cluster = env.SOLANA_CLUSTER || 'devnet';
   const amount = num(env.CLAIM_AMOUNT, 10000);
