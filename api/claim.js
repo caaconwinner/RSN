@@ -16,7 +16,7 @@
 //   DAILY_CLAIM_CAP       fills per day across everyone, default 500
 //   KV_REST_API_URL + KV_REST_API_TOKEN (or UPSTASH_REDIS_REST_URL + _TOKEN)  claim records, Upstash Redis
 //   FAUCET_DEV_MEMORY=1   keep claim records in memory instead (local testing only)
-const { env, num, kv, count, storeReady, secretKey, sha, verifySig, clientIp, readBody } = require('./_shared');
+const { env, num, kv, count, storeReady, secretKey, verifySig, clientIp, readBody, walletChanges } = require('./_shared');
 // The Solana libraries load on first use, so the "opens at launch" answer never depends on them.
 let bs58, Connection, Keypair, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction, ComputeBudgetProgram;
 let getMint, getAssociatedTokenAddressSync, createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction, MEMO;
@@ -28,7 +28,7 @@ const loadLibs = () => {
   MEMO = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 };
 
-const TX_TTL = 120e3; // a built transaction must come back signed within 2 minutes
+const TX_TTL = 300e3; // a built transaction must come back signed within 5 minutes
 
 // --- Solana setup, cached between requests on a warm function ---
 let setup;
@@ -96,17 +96,19 @@ module.exports = async (req, res) => {
           new TransactionInstruction({ programId: MEMO, keys: [{ pubkey: wallet, isSigner: true, isWritable: false }], data: Buffer.from('Robot Sex Nickels faucet fill') }),
         ],
       }).compileToV0Message();
-      // remembered by its hash, so building a fill for someone else's address cannot disturb theirs
-      await kv('SET', `rsn:tx:${sha(message.serialize())}`, JSON.stringify({ w: address, b: blockhash, v: lastValidBlockHeight }), 'PX', TX_TTL);
+      // remembered per wallet; building another fill for the same address only swaps in an identical one
+      await kv('SET', `rsn:tx:${address}`, JSON.stringify({ m: Buffer.from(message.serialize()).toString('base64'), b: blockhash, v: lastValidBlockHeight }), 'PX', TX_TTL);
       return res.json({ tx: Buffer.from(new VersionedTransaction(message).serialize()).toString('base64') });
     }
 
     // Step 2: the visitor signed it. Check it is our transaction and their signature, then the faucet signs and sends.
     let tx;
     try { tx = VersionedTransaction.deserialize(Buffer.from(String(body.signed), 'base64')); } catch { return fail(400, 'That is not a transaction.'); }
-    const msg = tx.message.serialize(), txKey = `rsn:tx:${sha(msg)}`;
+    const msg = tx.message.serialize(), txKey = `rsn:tx:${address}`;
     const saved = JSON.parse((await kv('GET', txKey)) || 'null');
-    if (!saved || saved.w !== address) return fail(400, 'That fill expired or your wallet changed it. Press Fill it again.');
+    if (!saved) return fail(400, 'That fill expired. Press Fill it again.');
+    const changed = walletChanges(Buffer.from(saved.m, 'base64'), tx);
+    if (changed) { console.warn('fill refused:', changed); return fail(400, `Your wallet changed the fill (${changed}), so the faucet can't send it. Press Fill it again.`); }
     await kv('DEL', txKey);
     const at = tx.message.staticAccountKeys.findIndex(k => k.equals(wallet));
     if (at < 1 || at >= tx.message.header.numRequiredSignatures || !verifySig(wallet.toBytes(), msg, tx.signatures[at])) return fail(400, 'The wallet signature did not check out. Press Fill it again.');
@@ -123,7 +125,7 @@ module.exports = async (req, res) => {
     }
     await Promise.all([count(ipKey, cooldown), count(dayKey, 2 * 864e5)]);
     // Once sent it usually lands within seconds; if confirming is slow, keep the cooldown and still show the link.
-    const done = await conn.confirmTransaction({ signature, blockhash: saved.b, lastValidBlockHeight: saved.v }, 'confirmed').catch(() => null);
+    const done = await conn.confirmTransaction({ signature, blockhash: tx.message.recentBlockhash, lastValidBlockHeight: saved.v }, 'confirmed').catch(() => null);
     if (done?.value?.err) { await kv('DEL', cdKey); return fail(500, 'The fill failed on chain, nothing was sent. Press Fill it again.'); }
     return res.json({ signature, nextClaimAt, cluster });
   } catch (e) {
