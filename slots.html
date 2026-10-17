@@ -347,8 +347,44 @@ header { position: relative; width: 100%; display: flex; justify-content: center
     requestAnimationFrame(step);
   }
 
-  // ---- sound ----
+  // ---- sound: effects rendered in rsn-artwork/sounds (sfx.py) + the announcer; beeps cover anything not loaded yet ----
   let ac;
+  const SFX = ['coin', 'lever', 'whir', 'stop', 'win', 'bigwin', 'jackpot', 'refill', 'welcome'];
+  const raw = {}, buf = {}, live = new Set();
+  let fetched = null, decoded = null, whir = null;
+  // download the files early (no audio context needed); decode on the first tap
+  const fetchSfx = () => fetched = fetched || Promise.all(SFX.map(n => fetch(`audio/slots/${n}.mp3`).then(r => r.ok ? r.arrayBuffer() : null).then(a => { raw[n] = a; }).catch(() => {})));
+  function audio() {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+    decoded = decoded || fetchSfx().then(() => Promise.all(SFX.filter(n => raw[n]).map(n =>
+      new Promise(res => ac.decodeAudioData(raw[n], b => { buf[n] = b; res(); }, res)))));
+    return ac;
+  }
+  function play(name, vol = 1, fallback, loop = false) {
+    if (!soundOn) return null;
+    try {
+      audio();
+      if (!buf[name]) { if (fallback) fallback(); return null; }
+      const s = ac.createBufferSource(), g = ac.createGain();
+      s.buffer = buf[name]; g.gain.value = vol;
+      if (loop) { s.loop = true; s.loopStart = .05; s.loopEnd = buf[name].duration - .05; }
+      s.connect(g).connect(ac.destination); s.start();
+      const h = { s, g }; live.add(h); s.onended = () => live.delete(h);
+      return h;
+    } catch { return null; }
+  }
+  function hush() { live.forEach(h => { try { h.s.stop(); } catch {} }); live.clear(); whir = null; }
+  function stopWhir() { if (!whir) return; const w = whir; whir = null; try { w.g.gain.setTargetAtTime(0, ac.currentTime, .05); w.s.stop(ac.currentTime + .3); } catch {} }
+  // the welcome plays once per visit, on the first tap (browsers keep pages silent until then)
+  function welcome() {
+    let seen = false; try { seen = sessionStorage.getItem('rsn-welcome') === '1'; sessionStorage.setItem('rsn-welcome', '1'); } catch {}
+    if (seen || !soundOn) return;
+    try { audio(); decoded.then(() => play('welcome', .9)); } catch {}
+  }
+  if (soundOn) fetchSfx();
+  ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, welcome, { once: true, capture: true }));
+
   function tone(freq, dur, type = 'square', vol = .05, when = 0) {
     if (!soundOn) return;
     try {
@@ -359,8 +395,10 @@ header { position: relative; width: 100%; display: flex; justify-content: center
       o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur);
     } catch {}
   }
-  const clunk = () => { tone(140, .12, 'square', .08); tone(70, .18, 'triangle', .1); };
-  const winJingle = big => { (big ? [523, 659, 784, 1047, 784, 1047, 1319] : [659, 784, 988]).forEach((f, i) => tone(f, .16, 'square', .05, i * .1)); };
+  const clunk = () => play('stop', .8, () => { tone(140, .12, 'square', .08); tone(70, .18, 'triangle', .1); });
+  const winJingle = mult => play(mult >= 250 ? 'jackpot' : mult >= 50 ? 'bigwin' : 'win', .8,
+    () => (mult >= 50 ? [523, 659, 784, 1047, 784, 1047, 1319] : [659, 784, 988]).forEach((f, i) => tone(f, .16, 'square', .05, i * .1)));
+  const blip = f => play('coin', .6, () => tone(f, .05));
 
   // ---- ui ----
   function bet() { return BETS[betIdx]; }
@@ -397,13 +435,14 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   function spin() {
     if (spinning) return;
     if (credits < bet()) {
-      if (credits < BETS[0]) { credits = 1000; $('msg').textContent = 'The robot slides you 1000 free nickels.'; tone(880, .2, 'triangle', .06); save(); updateUI(); return; }
+      if (credits < BETS[0]) { credits = 1000; $('msg').textContent = 'The robot slides you 1000 free nickels.'; play('refill', .8, () => tone(880, .2, 'triangle', .06)); save(); updateUI(); return; }
       while (credits < bet()) betIdx--; updateUI(); save();
     }
     spinning = true; credits -= bet(); $('win').value = 0; $('winbox').classList.remove('hot');
     reel.forEach(st => st.win = false);
     $('msg').textContent = 'Spinning…'; updateUI();
-    tone(300, .08, 'square', .04); pullLever();
+    play('lever', .9, () => tone(300, .08, 'square', .04)); pullLever();
+    stopWhir(); whir = play('whir', .45, null, true);
 
     const rm = reduce();
     const newStops = STRIPS.map(s => Math.floor(Math.random() * s.length));
@@ -415,7 +454,7 @@ header { position: relative; width: 100%; display: flex; justify-content: center
       if (dist === 0) dist = n;
       // drum turns downward: earlier stops come in from the top
       st.from = stops[r]; st.to = stops[r] - dist; st.t0 = now; st.dur = rm ? 250 : 1300 + r * 480; st.moving = true;
-      st.done = () => { st.pos = st.to = newStops[r]; clunk(); if (++done === 3) settle(newStops); };
+      st.done = () => { st.pos = st.to = newStops[r]; clunk(); if (whir) whir.g.gain.value *= .6; if (++done === 3) { stopWhir(); settle(newStops); } };
     });
     kick();
   }
@@ -432,7 +471,7 @@ header { position: relative; width: 100%; display: flex; justify-content: center
       reel.forEach((st, i) => st.win = three || line[i] === 'nickel');
       winT0 = performance.now(); kick();
       $('msg').textContent = mult >= 250 ? `JACKPOT! ${win} nickels!` : mult >= 50 ? `Big win: ${win} nickels!` : `You win ${win} nickel${win === 1 ? '' : 's'}.`;
-      winJingle(mult >= 50);
+      winJingle(mult);
       if (mult >= 20) shower(Math.min(60, 10 + mult / 4));
     } else {
       $('msg').textContent = QUIPS[Math.floor(Math.random() * QUIPS.length)];
@@ -453,9 +492,9 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   // ---- wire up ----
   $('spin').addEventListener('click', spin);
   lever.addEventListener('click', spin);
-  $('betDown').addEventListener('click', () => { if (betIdx > 0) { betIdx--; tone(500, .05); save(); updateUI(); } });
-  $('betUp').addEventListener('click', () => { if (betIdx < BETS.length - 1) { betIdx++; tone(700, .05); save(); updateUI(); } });
-  $('sound').addEventListener('click', () => { soundOn = !soundOn; save(); updateUI(); tone(600, .08); });
+  $('betDown').addEventListener('click', () => { if (betIdx > 0) { betIdx--; blip(500); save(); updateUI(); } });
+  $('betUp').addEventListener('click', () => { if (betIdx < BETS.length - 1) { betIdx++; blip(700); save(); updateUI(); } });
+  $('sound').addEventListener('click', () => { soundOn = !soundOn; save(); updateUI(); if (soundOn) { fetchSfx(); blip(600); } else hush(); });
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); spin(); }
   });
