@@ -42,7 +42,7 @@ C.sendRawTransaction = async raw => {
 };
 C.confirmTransaction = async () => ({ value: { err: null } });
 
-Object.assign(process.env, { FAUCET_SECRET_KEY: JSON.stringify([...faucet.secretKey]), RSN_MINT: mintKp.publicKey.toBase58(), FAUCET_DEV_MEMORY: '1', CLAIM_AMOUNT: '1000' });
+Object.assign(process.env, { FAUCET_SECRET_KEY: JSON.stringify([...faucet.secretKey]), RSN_MINT: mintKp.publicKey.toBase58(), FAUCET_DEV_MEMORY: '1' });
 const handler = require('../api/claim.js');
 const call = (method, body, query = {}, ip = '1.2.3.4') => new Promise(ok => {
   const res = { code: 200, setHeader() {}, status(c) { this.code = c; return this; }, json(d) { ok({ code: this.code, ...d }); } };
@@ -76,7 +76,7 @@ const check = (ok, label, extra = '') => { console.log((ok ? 'PASS ' : 'FAIL ') 
   tx3.sign([visitor]);
   r = await call('POST', { wallet: w, signed: Buffer.from(tx3.serialize()).toString('base64') });
   check(r.code === 200 && r.signature && r.nextClaimAt > Date.now() + 3.9 * 36e5, 'signed claim sent', JSON.stringify(r));
-  check(balance(visitor.publicKey) === 1000, 'visitor received 1000 RSN', balance(visitor.publicKey));
+  check(balance(visitor.publicKey) === 10000, 'visitor received 10,000 RSN (the default)', balance(visitor.publicKey));
   check((svm.getBalance(visitor.publicKey) || 0n) === solBefore, 'visitor paid no SOL');
   r = await call('GET', null, { wallet: w }); check(r.nextClaimAt > Date.now(), 'GET after claim shows countdown');
   r = await call('POST', { wallet: w }); check(r.code === 429 && r.nextClaimAt > Date.now(), 'second claim within 4h refused', r.error);

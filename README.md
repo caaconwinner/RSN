@@ -23,7 +23,7 @@ Set these in Vercel → Project → Settings → Environment Variables. Never co
 | `RSN_MINT` | RSN token mint (contract) address. Classic SPL and Token-2022 both work. |
 | `SOLANA_RPC_URL` | Defaults to devnet. For mainnet use a dedicated RPC (e.g. a free Helius or QuickNode endpoint); the public mainnet RPC rate-limits hard. |
 | `SOLANA_CLUSTER` | `devnet` (default) or `mainnet`, for the Solscan link. |
-| `CLAIM_AMOUNT` | RSN per fill, default 1000. |
+| `CLAIM_AMOUNT` | RSN per fill, default 10,000 (about $1 each at a $100k market cap). |
 | `CLAIM_COOLDOWN_HOURS` | Default 4. |
 | `IP_CLAIMS_PER_WINDOW` | Fills per IP address per cooldown, default 3 (stops one person farming many wallets). |
 | `DAILY_CLAIM_CAP` | Fills per day for everyone combined, default 500 (caps the damage of a bot wave). |

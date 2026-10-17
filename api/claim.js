@@ -10,7 +10,7 @@
 //   RSN_MINT              RSN token mint address
 //   SOLANA_RPC_URL        default https://api.devnet.solana.com
 //   SOLANA_CLUSTER        devnet | mainnet (for the explorer link), default devnet
-//   CLAIM_AMOUNT          whole RSN per fill, default 1000
+//   CLAIM_AMOUNT          whole RSN per fill, default 10000
 //   CLAIM_COOLDOWN_HOURS  default 4
 //   IP_CLAIMS_PER_WINDOW  fills per IP address per cooldown window, default 3
 //   DAILY_CLAIM_CAP       fills per day across everyone, default 500
@@ -86,7 +86,7 @@ module.exports = async (req, res) => {
   if (!kvUrl && env.FAUCET_DEV_MEMORY !== '1') return fail(503, 'The faucet is being set up. Check back soon!');
 
   const cluster = env.SOLANA_CLUSTER || 'devnet';
-  const amount = num(env.CLAIM_AMOUNT, 1000);
+  const amount = num(env.CLAIM_AMOUNT, 10000);
   const cooldown = num(env.CLAIM_COOLDOWN_HOURS, 4) * 36e5;
   let body = req.body || {};
   try { if (typeof body === 'string') body = JSON.parse(body || '{}'); } catch { return fail(400, 'Bad request.'); }
