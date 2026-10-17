@@ -7,7 +7,8 @@
 //   RSNFaucet.open().then(() => { /* dripping now */ })
 (() => {
   const canvas = document.getElementById('faucet-canvas');
-  if (!canvas || !matchMedia('(min-width: 1301px)').matches) return;
+  if (!canvas) return;
+  const small = matchMedia('(max-width: 1300px)').matches; // phones: fetch the other clips only when they're needed
   const { w, h, cols, frames, fps } = JSON.parse(canvas.dataset.sheet);
   const ctx = canvas.getContext('2d');
   canvas.width = w; canvas.height = h;
@@ -39,7 +40,7 @@
     sheet = img; draw(); canvas.classList.add('ready');
     setTimeout(tick, 1000 / fps);
     // fetch the other two in the background so opening never stalls
-    (window.requestIdleCallback || setTimeout)(() => { load('turn'); load('drip'); });
+    if (!small) (window.requestIdleCallback || setTimeout)(() => { load('turn'); load('drip'); });
   });
   window.RSNFaucet = {
     ready: true,
