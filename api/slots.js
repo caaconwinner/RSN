@@ -18,7 +18,7 @@
 //   SLOTS_MIN_DEPOSIT      default 10
 //   RSN_MINT, SOLANA_RPC_URL, SOLANA_CLUSTER, KV_REST_API_URL + KV_REST_API_TOKEN as for the faucet
 const crypto = require('crypto');
-const { env, num, kv, storeReady, secretKey, sha, verifySig, readBody } = require('./_shared');
+const { env, num, kv, storeReady, secretKey, verifySig, readBody, walletChanges } = require('./_shared');
 const reels = require('./_slots-math');
 let bs58, Connection, Keypair, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction, ComputeBudgetProgram;
 let getMint, getAssociatedTokenAddressSync, createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction, MEMO;
@@ -30,12 +30,12 @@ const loadLibs = () => {
   MEMO = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 };
 
-const TX_TTL = 120e3;           // a built deposit must come back signed within 2 minutes
+const TX_TTL = 300e3;           // a built deposit must come back signed within 5 minutes
 const SESSION_TTL = 12 * 36e5;  // a sign-in lasts 12 hours
 const SPIN_GAP = 300;           // ms between spins per wallet
 const K = {
   bal: w => `rsn:sl:bal:${w}`, liab: 'rsn:sl:liab', sess: t => `rsn:sl:sess:${t}`, login: w => `rsn:sl:login:${w}`,
-  tx: h => `rsn:sl:tx:${h}`, dep: s => `rsn:sl:dep:${s}`, lock: w => `rsn:sl:lock:${w}`,
+  tx: w => `rsn:sl:tx:${w}`, dep: s => `rsn:sl:dep:${s}`, lock: w => `rsn:sl:lock:${w}`,
 };
 const bets = () => String(env.SLOTS_BETS || '10,50,100,500,1000').split(',').map(Number).filter(n => n > 0 && Number.isInteger(n));
 const whole = v => (Number.isInteger(+v) && +v > 0 ? +v : 0);
@@ -167,15 +167,17 @@ module.exports = async (req, res) => {
             new TransactionInstruction({ programId: MEMO, keys: [], data: Buffer.from('Robot Sex Nickels slots deposit') }),
           ],
         }).compileToV0Message();
-        await kv('SET', K.tx(sha(message.serialize())), JSON.stringify({ w: address, amt: amount, b: blockhash, v: lastValidBlockHeight }), 'PX', TX_TTL);
+        await kv('SET', K.tx(address), JSON.stringify({ m: Buffer.from(message.serialize()).toString('base64'), amt: amount, b: blockhash, v: lastValidBlockHeight }), 'PX', TX_TTL);
         return res.json({ tx: Buffer.from(new VersionedTransaction(message).serialize()).toString('base64') });
       }
-      // the player signed it: check it is the deposit we built, then send it ourselves so we know its signature
+      // the player signed it: check it is the deposit we built (wallets may add safety checks), then send it ourselves
       let tx;
       try { tx = VersionedTransaction.deserialize(Buffer.from(String(body.signed), 'base64')); } catch { return fail(400, 'That is not a transaction.'); }
-      const msg = tx.message.serialize(), txKey = K.tx(sha(msg));
+      const msg = tx.message.serialize(), txKey = K.tx(address);
       const saved = JSON.parse((await kv('GET', txKey)) || 'null');
-      if (!saved || saved.w !== address) return fail(400, 'That deposit expired or your wallet changed it. Try again.');
+      if (!saved) return fail(400, 'That deposit expired. Try again.');
+      const changed = walletChanges(Buffer.from(saved.m, 'base64'), tx);
+      if (changed) { console.warn('deposit refused:', changed); return fail(400, `Your wallet changed the deposit (${changed}), so it was not sent. Try again.`); }
       if (!verifySig(wallet.toBytes(), msg, tx.signatures[0])) return fail(400, 'The wallet signature did not check out.');
       await kv('DEL', txKey);
       const signature = bs58.encode(tx.signatures[0]);
@@ -188,7 +190,7 @@ module.exports = async (req, res) => {
         console.error('deposit send failed', e);
         return fail(400, 'The deposit did not go through, no RSN moved. Check you have a little SOL for the fee.');
       }
-      const done = await s.conn.confirmTransaction({ signature, blockhash: saved.b, lastValidBlockHeight: saved.v }, 'confirmed').catch(() => null);
+      const done = await s.conn.confirmTransaction({ signature, blockhash: tx.message.recentBlockhash, lastValidBlockHeight: saved.v }, 'confirmed').catch(() => null);
       if (done?.value?.err) { await kv('DEL', K.dep(signature)); return fail(400, 'The deposit failed on chain, no RSN moved.'); }
       if (!done) return res.json({ signature, pending: true, balance: await balance(address), cluster });
       await credit(signature);

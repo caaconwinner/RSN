@@ -11,7 +11,7 @@
     "bs58": "^4.0.1"
   },
   "scripts": {
-    "test": "node test/claim-test.js && node test/slots-test.js",
+    "test": "node test/wallet-test.js && node test/claim-test.js && node test/slots-test.js",
     "test:2022": "node test/claim-test.js 2022 && node test/slots-test.js 2022"
   },
   "devDependencies": {

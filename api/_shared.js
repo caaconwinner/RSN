@@ -37,11 +37,41 @@ const storeReady = () => !!kvUrl || env.FAUCET_DEV_MEMORY === '1';
 
 // a wallet key from Vercel env: base58 or a JSON byte array
 const secretKey = (raw, bs58) => (raw = raw.trim(), raw.startsWith('[') ? Uint8Array.from(JSON.parse(raw)) : bs58.decode(raw));
-const sha = buf => crypto.createHash('sha256').update(buf).digest('base64');
 const verifySig = (pubkeyBytes, msg, sig) => crypto.verify(null, msg, crypto.createPublicKey({
   key: Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), Buffer.from(pubkeyBytes)]), format: 'der', type: 'spki',
 }), sig);
 const clientIp = req => String(req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket?.remoteAddress || '?').split(',')[0].trim();
 const readBody = req => { const b = req.body || {}; return typeof b === 'string' ? JSON.parse(b || '{}') : b; };
 
-module.exports = { env, num, kv, count, storeReady, secretKey, sha, verifySig, clientIp, readBody };
+// Wallets may rework a transaction before signing it: Phantom on mainnet adds Lighthouse safety checks and can
+// change the priority fee or refresh the blockhash. Accept the signed one only if every instruction we built is
+// still there, unchanged and in order, the fee payer and signers are the same, and anything added is a harmless
+// Lighthouse check or a compute budget setting whose fee stays small. Returns what is wrong, or null if it is fine.
+const COMPUTE = 'ComputeBudget111111111111111111111111111111';
+const LIGHTHOUSE = 'L2TExMFKdjpN9kozasaurPirfHy9P8sbXoAN1qA3S95';
+const MAX_PRIORITY_LAMPORTS = 200000; // 0.0002 SOL
+const walletChanges = (builtBytes, tx) => {
+  const w3 = require('@solana/web3.js'), msg = tx.message;
+  if (msg.addressTableLookups?.length) return 'uses lookup tables';
+  const builtMsg = w3.VersionedMessage.deserialize(builtBytes);
+  const signers = m => m.staticAccountKeys.slice(0, m.header.numRequiredSignatures).map(String).sort().join();
+  if (signers(msg) !== signers(builtMsg) || !msg.staticAccountKeys[0].equals(builtMsg.staticAccountKeys[0])) return 'signers changed';
+  const id = ix => `${ix.programId}|${ix.keys.map(k => `${k.pubkey}:${+k.isSigner}${+k.isWritable}`)}|${Buffer.from(ix.data).toString('hex')}`;
+  const want = w3.TransactionMessage.decompile(builtMsg).instructions.filter(ix => String(ix.programId) !== COMPUTE).map(id);
+  let next = 0, price = 0, limit = 0, count = 0;
+  for (const ix of w3.TransactionMessage.decompile(msg).instructions) {
+    const program = String(ix.programId), d = Buffer.from(ix.data);
+    count++;
+    if (program === COMPUTE) {
+      if (d[0] === 2 && d.length >= 5) limit = d.readUInt32LE(1);
+      else if (d[0] === 3 && d.length >= 9) price = Number(d.readBigUInt64LE(1));
+      count--;
+    } else if (next < want.length && id(ix) === want[next]) next++;
+    else if (program !== LIGHTHOUSE) return 'an instruction was added or changed';
+  }
+  if (next !== want.length) return 'an instruction is missing';
+  if (price * (limit || Math.min(1.4e6, 2e5 * count)) / 1e6 > MAX_PRIORITY_LAMPORTS) return 'priority fee too high';
+  return null;
+};
+
+module.exports = { env, num, kv, count, storeReady, secretKey, verifySig, clientIp, readBody, walletChanges };

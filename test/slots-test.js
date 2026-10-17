@@ -82,7 +82,7 @@ const deposit = async (session, kp, amount) => {
   check(r.code === 400, 'another session cannot submit my deposit', r.error);
   r = await call('POST', { action: 'deposit', session: S, amount: 100 });
   tx = w3.VersionedTransaction.deserialize(Buffer.from(r.tx, 'base64'));
-  tx.message.recentBlockhash = tx.message.recentBlockhash.replace(/.$/, c => c === '1' ? '2' : '1'); tx.sign([player]);
+  tx.message.compiledInstructions[3].data[2] ^= 1; tx.sign([player]);
   r = await call('POST', { action: 'deposit', session: S, signed: b64(tx.serialize()) });
   check(r.code === 400, 'tampered deposit refused', r.error);
 

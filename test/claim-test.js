@@ -19,8 +19,8 @@ const call = (method, body, query = {}, ip = '1.2.3.4') => new Promise(ok => {
   check(r.code === 200 && r.tx, 'POST builds a transaction');
   const tx = w3.VersionedTransaction.deserialize(Buffer.from(r.tx, 'base64'));
   check(tx.message.staticAccountKeys[0].equals(faucet.publicKey), 'faucet is the fee payer');
-  // tampered: visitor signs a different transaction
-  const evil = w3.VersionedTransaction.deserialize(Buffer.from(r.tx, 'base64')); evil.message.recentBlockhash = svm.latestBlockhash().replace(/.$/, c => c === '1' ? '2' : '1');
+  // tampered: visitor raises the amount before signing
+  const evil = w3.VersionedTransaction.deserialize(Buffer.from(r.tx, 'base64')); evil.message.compiledInstructions[3].data[2] ^= 1;
   evil.sign([visitor]);
   r = await call('POST', { wallet: w, signed: Buffer.from(evil.serialize()).toString('base64') });
   check(r.code === 400, 'tampered transaction refused', r.error);
