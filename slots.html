@@ -47,9 +47,9 @@ body {
 
 /* header */
 header { position: relative; width: 100%; display: flex; justify-content: center; }
-.logo { width: min(460px, 86%); height: auto; filter: drop-shadow(0 6px 10px rgba(40, 14, 6, .45)); }
+.logo { width: min(460px, 86%); height: auto; transform: translateX(-7%); /* centres the plaque, not the no-humans sign hanging off its left */ filter: drop-shadow(0 6px 10px rgba(40, 14, 6, .45)); }
 .sign {
-  position: absolute; right: max(0px, calc(50% - 330px)); top: 6px;
+  position: absolute; right: max(0px, calc(50% - 298px)); top: 6px;
   font: 13px/1.15 var(--display); text-align: center; color: var(--ink);
   background: var(--cream); border: 3px solid var(--green); border-radius: 10px;
   padding: 6px 10px; box-shadow: 0 4px 0 rgba(12, 22, 14, .35);
