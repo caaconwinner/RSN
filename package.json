@@ -1,7 +1,7 @@
 {
   "name": "rsn-site",
   "private": true,
-  "description": "Robot Sex Nickels website. Static pages plus the /api/claim faucet function on Vercel.",
+  "description": "Robot Sex Nickels website. Static pages plus the /api/claim faucet and /api/slots real RSN functions on Vercel.",
   "engines": {
     "node": "22.x"
   },
@@ -11,8 +11,8 @@
     "bs58": "^4.0.1"
   },
   "scripts": {
-    "test": "node test/claim-test.js",
-    "test:2022": "node test/claim-test.js 2022"
+    "test": "node test/claim-test.js && node test/slots-test.js",
+    "test:2022": "node test/claim-test.js 2022 && node test/slots-test.js 2022"
   },
   "devDependencies": {
     "@solana/kit": "^8.5.0",

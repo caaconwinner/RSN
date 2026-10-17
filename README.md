@@ -3,9 +3,10 @@
 Website for Robot Sex Nickels (RSN), rebuilt on the original 2014 robotsexnickels.com theme, plus the Arcade slot machine.
 
 - `index.html`: the main site
-- `slots.html`: Nickel Jiggy Slots (play money only)
+- `slots.html`: Nickel Jiggy Slots (Fun nickels, plus a Real RSN mode that is off until `SLOTS_ENABLED=1`)
 - `img/`: original theme art and arcade graphics
 - `js/faucet-claim.js` + `api/claim.js`: the Nickel Faucet (free RSN, one fill per wallet every 4 hours)
+- `js/slots-rsn.js` + `js/wallet.js` + `api/slots.js`: Real RSN mode for the slots
 
 Static site, no build step. Deployed on Vercel: import the repo and press Deploy.
 
@@ -31,6 +32,23 @@ Set these in Vercel → Project → Settings → Environment Variables. Never co
 
 Each fill costs the faucet under 0.00002 SOL in fees, plus about 0.002 SOL the first time a wallet receives RSN (the token account deposit).
 
-Tests run the whole claim flow against an in-process Solana VM: `npm install && npm test` (and `npm run test:2022` for Token-2022 mints).
+## Real RSN slots
+
+The **Real RSN** switch above the machine lets players sign in with their wallet (a free message signature), deposit RSN into the pot wallet, play, and withdraw back to the same wallet. Every spin is drawn on the server (`api/slots.js`, same reels and paytable as the page, about 94.1% return, top prize 250x the bet). A bet is only accepted while the pot can pay its top prize on top of what it already owes players, so the largest bet shrinks automatically when the pot runs low.
+
+Sizing: with bets of 10 / 50 / 100 / 500 / 1,000 RSN the top prize is 250,000 RSN. A pot of 2,000,000 RSN has about a 1 in 2,000 chance of ever running dry (1,000,000 RSN: about 1 in 250). Over time the pot keeps about 6% of what is bet.
+
+Off by default. It uses `RSN_MINT`, `SOLANA_RPC_URL`, `SOLANA_CLUSTER` and the Upstash variables above, plus:
+
+| Variable | What it is |
+| --- | --- |
+| `SLOTS_ENABLED` | `1` turns Real RSN on. Anything else shows "opens soon". |
+| `SLOTS_POT_SECRET_KEY` | Pot hot wallet key. A separate wallet from the faucet, holding the pot RSN plus some SOL for withdrawal fees. |
+| `SLOTS_BETS` | Bets in whole RSN, default `10,50,100,500,1000`. |
+| `SLOTS_MIN_DEPOSIT` | Default 10. |
+
+Players pay the network fee on deposits; the pot pays it on withdrawals.
+
+Tests run the whole claim flow and the slots deposit / spin / withdraw flow against an in-process Solana VM: `npm install && npm test` (and `npm run test:2022` for Token-2022 mints).
 
 Artwork by Laura Fletcher, used with permission. Tock The Robot 3D model by snowcapstudios (blendswap.com).

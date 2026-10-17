@@ -161,6 +161,36 @@ header { position: relative; width: 100%; display: flex; justify-content: center
 .topbar .back { margin: 0; }
 #music { font-size: 14px; padding: 8px 14px; }
 @media (max-width: 420px) { .topbar .back, #music { font-size: 12px; padding: 7px 10px; } }
+
+/* Fun / Real RSN switch and the RSN wallet panel (js/slots-rsn.js) */
+.modes { justify-self: center; display: flex; gap: 0; border: 3px solid var(--ink); border-radius: 999px; overflow: hidden; box-shadow: 0 3px 0 var(--ink); }
+.modes button { font: 400 14px/1 var(--display); padding: 9px 16px; border: 0; background: var(--cream); color: var(--ink); cursor: pointer; }
+.modes button + button { border-left: 3px solid var(--ink); }
+.modes button[aria-pressed="true"] { background: var(--green); color: var(--cream); }
+.modes button:focus-visible { outline: 3px solid var(--olive); outline-offset: -3px; }
+#rsn-panel { justify-self: stretch; }
+#rsn-panel .pill { font-size: 15px; padding: 9px 16px; }
+.rsn-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+.rsn-row[hidden], #rsn-who[hidden], #rsn-connect[hidden] { display: none; }
+#rsn-who { font: 400 15px/1 var(--mono); }
+#rsn-who button { margin-left: 6px; border: 0; background: none; color: var(--rust); text-decoration: underline; cursor: pointer; font: 600 13px var(--body); }
+#rsn-amount { width: 9em; padding: 8px 10px; border: 3px solid var(--ink); border-radius: 12px; font: 400 16px/1 var(--mono); background: #fff; }
+#rsn-msg { margin-top: 10px; min-height: 1.2em; }
+#rsn-msg a, #rsn-info a { color: var(--rust); }
+
+#wallet-picker { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
+#wallet-picker[hidden] { display: none; }
+#wallet-picker .wp-card { position: relative; width: min(340px, 100%); max-height: 100%; overflow: auto; box-sizing: border-box; padding: 20px; border: 3px solid var(--green); border-radius: 16px; background: var(--cream); color: var(--ink); font-family: var(--body); }
+#wallet-picker h3 { margin: 0 0 14px; font: 400 18px/1.2 var(--display); text-align: center; }
+#wallet-picker .wp-close { position: absolute; top: 8px; right: 10px; border: 0; background: none; font-size: 26px; line-height: 1; cursor: pointer; color: var(--green); }
+#wallet-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+#wallet-list button, #wallet-list a { display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; padding: 10px 12px; border: 2px solid var(--green); border-radius: 12px; background: #fff; color: var(--ink); font: 400 15px/1.2 var(--display); text-align: left; text-decoration: none; cursor: pointer; }
+#wallet-list button:hover, #wallet-list a:hover { background: var(--green); color: var(--cream); }
+#wallet-list img, #wallet-list .wp-dot { width: 28px; height: 28px; flex: none; border-radius: 8px; }
+#wallet-list .wp-dot { background: var(--green); opacity: .25; }
+#wallet-list small { margin-left: auto; font: 600 11px var(--body); opacity: .7; }
+#wallet-note { margin: 12px 0 0; font-size: 13px; text-align: center; }
+#wallet-note:empty { display: none; }
 </style>
 </head>
 <body>
@@ -174,6 +204,11 @@ header { position: relative; width: 100%; display: flex; justify-content: center
     <img class="logo" src="img/logo.png" alt="Robot Sex Nickels logo: a no-humans sign beside a brass robot on a riveted plaque">
     <div class="sign">ARCADE<b>Now Open!</b></div>
   </header>
+
+  <div class="modes" role="group" aria-label="Play with">
+    <button type="button" id="mode-fun" aria-pressed="true">Fun nickels</button>
+    <button type="button" id="mode-rsn" aria-pressed="false">Real RSN</button>
+  </div>
 
   <div class="stage">
     <section class="machine" aria-label="Slot machine">
@@ -201,6 +236,22 @@ header { position: relative; width: 100%; display: flex; justify-content: center
     </section>
   </div>
 
+  <section class="card" id="rsn-panel" aria-labelledby="rsn-title" hidden>
+    <h2 id="rsn-title">Real RSN</h2>
+    <p id="rsn-info"></p>
+    <div class="rsn-row">
+      <button type="button" class="pill dark" id="rsn-connect">Connect wallet</button>
+      <span id="rsn-who" hidden>Signed in as <span></span><button type="button">Sign out</button></span>
+    </div>
+    <div class="rsn-row" id="rsn-cash" hidden>
+      <input id="rsn-amount" type="number" min="1" step="1" inputmode="numeric" placeholder="RSN amount" aria-label="RSN amount">
+      <button type="button" class="pill" id="rsn-deposit">Deposit</button>
+      <button type="button" class="pill" id="rsn-withdraw">Withdraw</button>
+    </div>
+    <p id="rsn-msg" aria-live="polite"></p>
+    <p class="fine">Deposits go to the slot pot wallet and your balance is kept by the machine. Withdraw goes back to the wallet you signed in with (leave the amount empty to take everything). Real tokens can be lost: only play with what you are happy to lose.</p>
+  </section>
+
   <section class="card" aria-labelledby="pt">
     <h2 id="pt">Paytable</h2>
     <p>Line up symbols on the red center line. Wins are multiplied by your bet.</p>
@@ -209,6 +260,14 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   </section>
 </div>
 <div class="shower" id="shower"></div>
+<div id="wallet-picker" hidden role="dialog" aria-modal="true" aria-labelledby="wallet-picker-title">
+  <div class="wp-card">
+    <button type="button" class="wp-close" aria-label="Close">&times;</button>
+    <h3 id="wallet-picker-title">Connect a wallet</h3>
+    <ul id="wallet-list"></ul>
+    <p id="wallet-note"></p>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -258,6 +317,16 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   let stops = store.get('stops', [0, 5, 11]);
   if (!Array.isArray(stops) || stops.length !== 3) stops = [0, 5, 11];
   let spinning = false;
+  // RSN mode (js/slots-rsn.js) plugs in here: its own bets and balance, and spins drawn by /api/slots
+  let real = null, funBetIdx = betIdx;
+  const bets = () => real ? real.bets : BETS;
+  const unit = n => real ? 'RSN' : n === 1 ? 'nickel' : 'nickels';
+  window.RSNSlots = {
+    attach(r) { if (spinning) return; real = r; funBetIdx = betIdx; betIdx = 0; updateUI(); },
+    detach() { if (spinning || !real) return; real = null; betIdx = funBetIdx; updateUI(); },
+    update: () => updateUI(),
+    get busy() { return spinning; },
+  };
   const $ = id => document.getElementById(id);
   const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -451,20 +520,21 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   const blip = f => play('coin', .6, () => tone(f, .05));
 
   // ---- ui ----
-  function bet() { return BETS[betIdx]; }
+  function bet() { return bets()[betIdx]; }
   function updateUI() {
-    $('credits').value = credits; $('bet').value = bet();
+    if (real) while (betIdx > 0 && bet() > real.maxBet) betIdx--;
+    $('credits').value = real ? real.balance : credits; $('bet').value = bet();
+    $('credits').previousElementSibling.textContent = real ? 'RSN' : 'Nickels';
     $('betDown').disabled = spinning || betIdx === 0;
-    $('betUp').disabled = spinning || betIdx === BETS.length - 1;
+    $('betUp').disabled = spinning || betIdx === bets().length - 1 || (real && bets()[betIdx + 1] > real.maxBet);
     $('sound').textContent = soundOn ? 'Sound on' : 'Sound off';
     $('sound').setAttribute('aria-pressed', soundOn);
     $('music').textContent = musicOn ? 'Music on' : 'Music off';
     $('music').setAttribute('aria-pressed', musicOn);
-    const broke = credits < bet();
-    $('spin').textContent = broke && credits < BETS[0] ? 'REFILL' : 'SPIN';
+    $('spin').textContent = !real && credits < BETS[0] ? 'REFILL' : 'SPIN';
     $('spin').disabled = spinning; lever.disabled = spinning;
   }
-  function save() { store.set('credits', credits); store.set('betIdx', betIdx); store.set('sound', soundOn); store.set('music', musicOn); store.set('stops', stops); }
+  function save() { store.set('credits', credits); store.set('betIdx', real ? funBetIdx : betIdx); store.set('sound', soundOn); store.set('music', musicOn); store.set('stops', stops); }
   function describe() { canvas.setAttribute('aria-label', 'Reels show ' + stops.map((s, r) => SYM[STRIPS[r][s]].name).join(', ')); }
 
   function countUp(el, to, ms) {
@@ -484,20 +554,32 @@ header { position: relative; width: 100%; display: flex; justify-content: center
 
   const QUIPS = ['Beep boop. Try again.', 'Insufficient lubrication.', 'No humans were harmed.', 'Recalibrating servos…', 'Close, meatbag. Close.', 'Robots never quit.'];
 
-  function spin() {
+  async function spin() {
     if (spinning) return;
-    if (credits < bet()) {
+    if (real && real.balance < bet()) {
+      if (real.balance < bets()[0]) return real.needFunds();
+      while (betIdx > 0 && real.balance < bet()) betIdx--;
+      updateUI();
+    } else if (!real && credits < bet()) {
       if (credits < BETS[0]) { credits = 1000; $('msg').textContent = 'The robot slides you 1000 free nickels.'; play('refill', .8, () => tone(880, .2, 'triangle', .06)); save(); updateUI(); return; }
       while (credits < bet()) betIdx--; updateUI(); save();
     }
-    spinning = true; credits -= bet(); $('win').value = 0; $('winbox').classList.remove('hot');
+    spinning = true; $('win').value = 0; $('winbox').classList.remove('hot');
+    if (real) real.balance -= bet(); else credits -= bet();
     reel.forEach(st => st.win = false);
     $('msg').textContent = 'Spinning…'; updateUI();
     play('lever', .9, () => tone(300, .08, 'square', .04)); pullLever();
     stopWhir(); whir = play('whir', .45, null, true);
 
+    let result = null; // in RSN mode the server draws the stops and settles the balance
+    if (real) {
+      try { result = await real.spin(bet()); } catch (e) {
+        stopWhir(); spinning = false; real.balance += e.balance === undefined ? bet() : 0;
+        $('msg').textContent = e.message; updateUI(); return;
+      }
+    }
     const rm = reduce();
-    const newStops = STRIPS.map(s => Math.floor(Math.random() * s.length));
+    const newStops = result ? result.stops : STRIPS.map(s => Math.floor(Math.random() * s.length));
     const now = performance.now() + (rm ? 0 : 140);
     let done = 0;
     reel.forEach((st, r) => {
@@ -506,23 +588,24 @@ header { position: relative; width: 100%; display: flex; justify-content: center
       if (dist === 0) dist = n;
       // drum turns downward: earlier stops come in from the top
       st.from = stops[r]; st.to = stops[r] - dist; st.t0 = now; st.dur = rm ? 250 : 1300 + r * 480; st.moving = true;
-      st.done = () => { st.pos = st.to = newStops[r]; clunk(); if (whir) whir.g.gain.value *= .6; if (++done === 3) { stopWhir(); settle(newStops); } };
+      st.done = () => { st.pos = st.to = newStops[r]; clunk(); if (whir) whir.g.gain.value *= .6; if (++done === 3) { stopWhir(); settle(newStops, result); } };
     });
     kick();
   }
 
-  function settle(newStops) {
+  function settle(newStops, result) {
     stops = newStops;
     const line = stops.map((s, r) => STRIPS[r][s]);
     const mult = payFor(line), win = mult * bet();
+    if (result) real.balance = result.balance;
     if (win > 0) {
-      credits += win;
+      if (!real) credits += win;
       countUp($('win'), win, Math.min(1500, 300 + win * 4));
       $('winbox').classList.add('hot');
       const three = line[0] === line[1] && line[1] === line[2];
       reel.forEach((st, i) => st.win = three || line[i] === 'nickel');
       winT0 = performance.now(); kick();
-      $('msg').textContent = mult >= 250 ? `JACKPOT! ${win} nickels!` : mult >= 50 ? `Big win: ${win} nickels!` : `You win ${win} nickel${win === 1 ? '' : 's'}.`;
+      $('msg').textContent = mult >= 250 ? `JACKPOT! ${win} ${unit(win)}!` : mult >= 50 ? `Big win: ${win} ${unit(win)}!` : `You win ${win} ${unit(win)}.`;
       winJingle(mult);
       if (mult >= 20) shower(Math.min(60, 10 + mult / 4));
     } else {
@@ -545,7 +628,7 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   $('spin').addEventListener('click', spin);
   lever.addEventListener('click', spin);
   $('betDown').addEventListener('click', () => { if (betIdx > 0) { betIdx--; blip(500); save(); updateUI(); } });
-  $('betUp').addEventListener('click', () => { if (betIdx < BETS.length - 1) { betIdx++; blip(700); save(); updateUI(); } });
+  $('betUp').addEventListener('click', () => { if (betIdx < bets().length - 1 && !(real && bets()[betIdx + 1] > real.maxBet)) { betIdx++; blip(700); save(); updateUI(); } });
   $('sound').addEventListener('click', () => { soundOn = !soundOn; save(); updateUI(); if (soundOn) { fetchSfx(); blip(600); } else hush(); });
   $('music').addEventListener('click', () => {
     musicOn = !musicOn; save(); updateUI();
@@ -565,5 +648,7 @@ header { position: relative; width: 100%; display: flex; justify-content: center
 })();
 </script>
 
+<script src="js/wallet.js"></script>
+<script src="js/slots-rsn.js"></script>
 </body>
 </html>
