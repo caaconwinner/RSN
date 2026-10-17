@@ -144,8 +144,8 @@
       const { nextClaimAt, cluster } = await api('GET', null, '?wallet=' + encodeURIComponent(conn.address));
       conn.cluster = cluster;
       if (nextClaimAt > Date.now()) return countdown(nextClaimAt, 'This wallet already filled up.');
-      claimBtn.hidden = false; claimBtn.disabled = false;
-    } catch (e) { say(esc(e.message)); }
+    } catch {} // not launched yet or a hiccup: Fill it still plays the animation, then says why
+    claimBtn.hidden = false; claimBtn.disabled = false;
   };
 
   const disconnect = () => {
@@ -167,8 +167,11 @@
     try {
       if (RSNFaucet.state !== 'open') say('Tock is opening the valve…');
       // the animation and building the transaction run together; the wallet asks once the valve is open
-      const [{ tx }] = await Promise.all([api('POST', { wallet: me.address }), RSNFaucet.open()]);
+      const [built] = await Promise.all([
+        api('POST', { wallet: me.address }).then(ok => ({ ok }), err => ({ err })), RSNFaucet.open()]);
       if (conn !== me) return;
+      if (built.err) throw built.err; // e.g. "The faucet opens when RSN launches." once the valve is open
+      const { tx } = built.ok;
       say('Confirm in your wallet…');
       const signed = await me.sign(unb64(tx), me.cluster);
       say('Sending your nickels…');
