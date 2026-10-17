@@ -109,6 +109,24 @@ a img { border: 0; }
 #faucet-msg { margin: 8px 0 0; padding: 6px 10px; border-radius: 10px; background: rgba(244,236,235,.9); color: var(--ink); font-size: 13px; line-height: 1.35; }
 #faucet-msg:empty { display: none; }
 #faucet-msg a { color: var(--green); font-weight: 700; }
+#faucet-wallet { margin: 0 0 8px; padding: 4px 10px; border-radius: 10px; background: rgba(244,236,235,.9); color: var(--ink); font: 700 12px/1.4 var(--display); }
+#faucet-wallet[hidden] { display: none; }
+#faucet-panel #faucet-wallet button { font: inherit; color: var(--rust); background: none; border: 0; padding: 0; box-shadow: none; text-decoration: underline; }
+#faucet-panel #faucet-wallet button:hover { background: none; color: var(--green); }
+/* wallet picker */
+#wallet-picker { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); white-space: normal; }
+#wallet-picker[hidden] { display: none; }
+#wallet-picker .wp-card { position: relative; width: min(340px, 100%); max-height: 100%; overflow: auto; padding: 20px; border: 3px solid var(--green); border-radius: 16px; background: var(--cream); box-shadow: var(--shadow); color: var(--ink); font-family: var(--body); }
+#wallet-picker h3 { margin: 0 0 14px; font: 700 18px/1.2 var(--display); text-align: center; }
+#wallet-picker .wp-close { position: absolute; top: 8px; right: 10px; border: 0; background: none; font-size: 26px; line-height: 1; cursor: pointer; color: var(--green); }
+#wallet-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+#wallet-list button, #wallet-list a { display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; padding: 10px 12px; border: 2px solid var(--green); border-radius: 12px; background: #fff; color: var(--ink); font: 700 15px/1.2 var(--display); text-align: left; text-decoration: none; cursor: pointer; }
+#wallet-list button:hover, #wallet-list a:hover { background: var(--green); color: var(--cream); }
+#wallet-list img, #wallet-list .wp-dot { width: 28px; height: 28px; flex: none; border-radius: 8px; }
+#wallet-list .wp-dot { background: var(--green); opacity: .25; }
+#wallet-list small { margin-left: auto; font: 600 11px var(--body); opacity: .7; }
+#wallet-note { margin: 12px 0 0; font-size: 13px; text-align: center; }
+#wallet-note:empty { display: none; }
 /* narrower screens: no wall space beside the header, so Tock and the faucet stand under the logo with the buttons beside them */
 @media (max-width: 1300px) {
   #tock-scene { position: static; width: auto; margin: 0 auto; padding-bottom: 16%; /* clear the struts under the header */ display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -255,6 +273,7 @@ ol.steps li { margin-bottom: .4em; }
       <canvas id="faucet-canvas" width="400" height="636" data-sheet='{"w":400,"h":636,"cols":10,"frames":60,"fps":12}'></canvas>
       <div id="faucet-panel">
         <button id="faucet-open" type="button">Fill my nickels</button>
+        <p id="faucet-wallet" hidden><span></span> · <button type="button">Disconnect</button></p>
         <button id="faucet-claim" type="button" hidden>Fill it</button>
         <p id="faucet-msg" role="status" aria-live="polite"></p>
       </div>
@@ -390,6 +409,14 @@ ol.steps li { margin-bottom: .4em; }
   addEventListener('scroll', () => { if (scrollY < 60) { links.forEach(a => a.classList.remove('active')); links[0].classList.add('active'); } }, { passive: true });
 })();
 </script>
+<div id="wallet-picker" hidden role="dialog" aria-modal="true" aria-labelledby="wallet-picker-title">
+  <div class="wp-card">
+    <button type="button" class="wp-close" aria-label="Close">&times;</button>
+    <h3 id="wallet-picker-title">Connect a wallet</h3>
+    <ul id="wallet-list"></ul>
+    <p id="wallet-note"></p>
+  </div>
+</div>
 <script src="js/faucet-scene.js"></script>
 <script src="js/faucet-claim.js"></script>
 </body>

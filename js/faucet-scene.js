@@ -47,6 +47,4 @@
     open() { wantOpen = true; load('turn'); load('drip'); return done; },
     get state() { return clip === 'dry' ? (wantOpen ? 'opening' : 'closed') : clip === 'turn' ? 'opening' : 'open'; },
   };
-  // ?faucet in the URL opens it straight away (handy for testing)
-  if (new URLSearchParams(location.search).has('faucet')) RSNFaucet.open();
 })();
