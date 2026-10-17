@@ -61,8 +61,9 @@ header { position: relative; width: 100%; display: flex; justify-content: center
 /* stage: Tock + the Blender-rendered machine. The cabinet render has the three reel windows cut out;
    the reels are a canvas behind it, drawn as lit drums. Positions are fractions of the render (rsn-artwork/blender/slots3d). */
 .stage { display: flex; align-items: flex-end; justify-content: center; width: 100%; }
-.tall { width: 190px; height: auto; margin-right: -24px; position: relative; z-index: 1; filter: drop-shadow(0 10px 12px rgba(40, 14, 6, .45)); }
-@media (max-width: 860px) { .tall { display: none; } }
+/* Tock stands just left of the machine without pushing it off-centre */
+.tall { position: absolute; right: calc(100% - 24px); bottom: 0; width: 190px; height: auto; z-index: 1; pointer-events: none; }
+@media (max-width: 959px) { .tall { display: none; } }
 .machine {
   position: relative; width: min(100%, 600px); aspect-ratio: 1000 / 1280;
   container-type: inline-size; filter: drop-shadow(0 12px 16px rgba(40, 14, 6, .5));
@@ -160,8 +161,8 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   </header>
 
   <div class="stage">
-    <img class="tall" id="tock" src="img/slots3d/tock.webp" alt="" width="250" height="707">
     <section class="machine" aria-label="Slot machine">
+      <img class="tall" id="tock" src="img/slots3d/tock.webp" alt="" width="250" height="707">
       <canvas id="reels" role="img" aria-label="Reels"></canvas>
       <img class="cab" src="img/slots3d/cabinet.webp" alt="" width="1000" height="1280">
       <button class="lever" id="lever" aria-label="Pull the lever to spin"></button>
@@ -460,7 +461,7 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   });
   // Tock idles beside the machine on wide screens (the animation only downloads there)
   const tock = $('tock');
-  if (matchMedia('(min-width: 861px)').matches && !reduce()) {
+  if (matchMedia('(min-width: 960px)').matches && !reduce()) {
     const anim = new Image(); anim.onload = () => { tock.src = anim.src; }; anim.src = 'img/slots3d/tock-idle.webp';
   }
   new ResizeObserver(size).observe(canvas);
