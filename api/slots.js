@@ -33,9 +33,11 @@ const loadLibs = () => {
 const TX_TTL = 300e3;           // a built deposit must come back signed within 5 minutes
 const SESSION_TTL = 12 * 36e5;  // a sign-in lasts 12 hours
 const SPIN_GAP = 300;           // ms between spins per wallet
+// records live under the mint, so switching RSN_MINT (a relaunch) starts every balance and the pot's books at zero
+const ns = () => `rsn:sl:${String(env.RSN_MINT).trim()}`;
 const K = {
-  bal: w => `rsn:sl:bal:${w}`, liab: 'rsn:sl:liab', sess: t => `rsn:sl:sess:${t}`, login: w => `rsn:sl:login:${w}`,
-  tx: w => `rsn:sl:tx:${w}`, dep: s => `rsn:sl:dep:${s}`, lock: w => `rsn:sl:lock:${w}`,
+  bal: w => `${ns()}:bal:${w}`, get liab() { return `${ns()}:liab`; }, sess: t => `${ns()}:sess:${t}`, login: w => `${ns()}:login:${w}`,
+  tx: w => `${ns()}:tx:${w}`, dep: s => `${ns()}:dep:${s}`, lock: w => `${ns()}:lock:${w}`,
 };
 const bets = () => String(env.SLOTS_BETS || '10,50,100,500,1000').split(',').map(Number).filter(n => n > 0 && Number.isInteger(n));
 const whole = v => (Number.isInteger(+v) && +v > 0 ? +v : 0);

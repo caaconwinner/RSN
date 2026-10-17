@@ -47,7 +47,7 @@ Off by default. It uses `RSN_MINT`, `SOLANA_RPC_URL`, `SOLANA_CLUSTER` and the U
 | `SLOTS_BETS` | Bets in whole RSN, default `10,50,100,500,1000`. |
 | `SLOTS_MIN_DEPOSIT` | Default 10. |
 
-Players pay the network fee on deposits; the pot pays it on withdrawals.
+Players pay the network fee on deposits; the pot pays it on withdrawals. Balances are stored per mint, so changing `RSN_MINT` for a relaunch starts everyone at zero (have players withdraw first).
 
 Tests run the whole claim flow and the slots deposit / spin / withdraw flow against an in-process Solana VM: `npm install && npm test` (and `npm run test:2022` for Token-2022 mints).
 
