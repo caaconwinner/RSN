@@ -17,5 +17,10 @@
   "devDependencies": {
     "@solana/kit": "^8.5.0",
     "litesvm": "^1.6.0"
+  },
+  "overrides": {
+    "rpc-websockets": {
+      "uuid": "^11.1.0"
+    }
   }
 }
