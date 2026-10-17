@@ -369,8 +369,9 @@ header { position: relative; width: 100%; display: flex; justify-content: center
       new Promise(res => ac.decodeAudioData(raw[n], b => { buf[n] = b; res(); }, res)))));
     return ac;
   }
+  let announcing = false;  // everything stays quiet while the welcome line plays
   function play(name, vol = 1, fallback, loop = false) {
-    if (!soundOn) return null;
+    if (!soundOn || announcing) return null;
     try {
       audio();
       if (!buf[name]) { if (fallback) fallback(); return null; }
@@ -389,31 +390,35 @@ header { position: relative; width: 100%; display: flex; justify-content: center
     try {
       const s = ac.createBufferSource(), g = ac.createGain();
       s.buffer = buf.theme; s.loop = true; g.gain.value = 0;
-      g.gain.setTargetAtTime(.32, ac.currentTime, .4);
+      g.gain.setTargetAtTime(.32, ac.currentTime, 1.2);  // slow fade in
       s.connect(g).connect(ac.destination); s.start(); theme = { s, g };
     } catch {}
   }
   function stopTheme() { if (!theme) return; const t = theme; theme = null; try { t.g.gain.setTargetAtTime(0, ac.currentTime, .1); t.s.stop(ac.currentTime + .5); } catch {} }
-  function duckTheme(sec) { if (!theme) return; const g = theme.g.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setTargetAtTime(.1, t, .1); g.setTargetAtTime(.32, t + sec, .5); }
   function hush() { live.forEach(h => { try { h.s.stop(); } catch {} }); live.clear(); whir = null; }
   function stopWhir() { if (!whir) return; const w = whir; whir = null; try { w.g.gain.setTargetAtTime(0, ac.currentTime, .05); w.s.stop(ac.currentTime + .3); } catch {} }
   // the welcome plays once per visit, on the first tap (browsers keep pages silent until then)
   function welcome() {
     let seen = false; try { seen = sessionStorage.getItem('rsn-welcome') === '1'; sessionStorage.setItem('rsn-welcome', '1'); } catch {}
     if ((seen || !soundOn) && !musicOn) return;
+    const intro = !seen && soundOn;
+    if (intro) announcing = true;  // hold every other sound from this first tap on
     try {
       audio();
       decoded.then(() => {
-        startTheme();
-        if (!seen && play('welcome', .9)) duckTheme(buf.welcome.duration - 1);
+        announcing = false;
+        if (intro && play('welcome', .9)) {
+          announcing = true;
+          setTimeout(() => { announcing = false; startTheme(); }, (buf.welcome.duration - .8) * 1000);
+        } else startTheme();
       });
-    } catch {}
+    } catch { announcing = false; }
   }
   if (soundOn || musicOn) fetchSfx();
   ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, welcome, { once: true, capture: true }));
 
   function tone(freq, dur, type = 'square', vol = .05, when = 0) {
-    if (!soundOn) return;
+    if (!soundOn || announcing) return;
     try {
       ac = ac || new (window.AudioContext || window.webkitAudioContext)();
       const t = ac.currentTime + when, o = ac.createOscillator(), g = ac.createGain();
@@ -526,7 +531,7 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   $('sound').addEventListener('click', () => { soundOn = !soundOn; save(); updateUI(); if (soundOn) { fetchSfx(); blip(600); } else hush(); });
   $('music').addEventListener('click', () => {
     musicOn = !musicOn; save(); updateUI();
-    if (musicOn) { try { audio(); decoded.then(startTheme); } catch {} } else stopTheme();
+    if (musicOn) { try { audio(); decoded.then(() => { if (!announcing) startTheme(); }); } catch {} } else stopTheme();
   });
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); spin(); }
