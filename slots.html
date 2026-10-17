@@ -149,12 +149,19 @@ header { position: relative; width: 100%; display: flex; justify-content: center
 @media (prefers-reduced-motion: reduce) { .coin { display: none; } }
 .back { display: inline-block; margin: 0 0 4px; font: 400 14px/1 var(--display); color: var(--ink); background: var(--cream); border: 3px solid var(--ink); border-radius: 999px; padding: 8px 14px; text-decoration: none; box-shadow: 0 3px 0 var(--ink); justify-self: start; }
 .back:hover { background: #fff8f4; }
+.topbar { justify-self: stretch; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.topbar .back { margin: 0; }
+#music { font-size: 14px; padding: 8px 14px; }
+@media (max-width: 420px) { .topbar .back, #music { font-size: 12px; padding: 7px 10px; } }
 </style>
 </head>
 <body>
 
 <div class="wrap">
-  <a class="back" href="index.html">&larr; Back to Robot Sex Nickels</a>
+  <div class="topbar">
+    <a class="back" href="index.html">&larr; Back to Robot Sex Nickels</a>
+    <button class="pill dark" id="music" aria-pressed="true">Music on</button>
+  </div>
   <header>
     <img class="logo" src="img/logo.png" alt="Robot Sex Nickels logo: a no-humans sign beside a brass robot on a riveted plaque">
     <div class="sign">ARCADE<b>Now Open!</b></div>
@@ -238,6 +245,7 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   let credits = store.get('credits', 1000);
   let betIdx = store.get('betIdx', 0);
   let soundOn = store.get('sound', true);
+  let musicOn = store.get('music', true);
   let stops = store.get('stops', [0, 5, 11]);
   if (!Array.isArray(stops) || stops.length !== 3) stops = [0, 5, 11];
   let spinning = false;
@@ -349,7 +357,7 @@ header { position: relative; width: 100%; display: flex; justify-content: center
 
   // ---- sound: effects rendered in rsn-artwork/sounds (sfx.py) + the announcer; beeps cover anything not loaded yet ----
   let ac;
-  const SFX = ['coin', 'lever', 'whir', 'stop', 'win', 'bigwin', 'jackpot', 'refill', 'welcome'];
+  const SFX = ['coin', 'lever', 'whir', 'stop', 'win', 'bigwin', 'jackpot', 'refill', 'welcome', 'theme'];
   const raw = {}, buf = {}, live = new Set();
   let fetched = null, decoded = null, whir = null;
   // download the files early (no audio context needed); decode on the first tap
@@ -374,15 +382,34 @@ header { position: relative; width: 100%; display: flex; justify-content: center
       return h;
     } catch { return null; }
   }
+  // theme music: loops under everything, dips while the announcer talks; its own on/off button
+  let theme = null;
+  function startTheme() {
+    if (!musicOn || theme || !buf.theme) return;
+    try {
+      const s = ac.createBufferSource(), g = ac.createGain();
+      s.buffer = buf.theme; s.loop = true; g.gain.value = 0;
+      g.gain.setTargetAtTime(.32, ac.currentTime, .4);
+      s.connect(g).connect(ac.destination); s.start(); theme = { s, g };
+    } catch {}
+  }
+  function stopTheme() { if (!theme) return; const t = theme; theme = null; try { t.g.gain.setTargetAtTime(0, ac.currentTime, .1); t.s.stop(ac.currentTime + .5); } catch {} }
+  function duckTheme(sec) { if (!theme) return; const g = theme.g.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setTargetAtTime(.1, t, .1); g.setTargetAtTime(.32, t + sec, .5); }
   function hush() { live.forEach(h => { try { h.s.stop(); } catch {} }); live.clear(); whir = null; }
   function stopWhir() { if (!whir) return; const w = whir; whir = null; try { w.g.gain.setTargetAtTime(0, ac.currentTime, .05); w.s.stop(ac.currentTime + .3); } catch {} }
   // the welcome plays once per visit, on the first tap (browsers keep pages silent until then)
   function welcome() {
     let seen = false; try { seen = sessionStorage.getItem('rsn-welcome') === '1'; sessionStorage.setItem('rsn-welcome', '1'); } catch {}
-    if (seen || !soundOn) return;
-    try { audio(); decoded.then(() => play('welcome', .9)); } catch {}
+    if ((seen || !soundOn) && !musicOn) return;
+    try {
+      audio();
+      decoded.then(() => {
+        startTheme();
+        if (!seen && play('welcome', .9)) duckTheme(buf.welcome.duration - 1);
+      });
+    } catch {}
   }
-  if (soundOn) fetchSfx();
+  if (soundOn || musicOn) fetchSfx();
   ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, welcome, { once: true, capture: true }));
 
   function tone(freq, dur, type = 'square', vol = .05, when = 0) {
@@ -408,11 +435,13 @@ header { position: relative; width: 100%; display: flex; justify-content: center
     $('betUp').disabled = spinning || betIdx === BETS.length - 1;
     $('sound').textContent = soundOn ? 'Sound on' : 'Sound off';
     $('sound').setAttribute('aria-pressed', soundOn);
+    $('music').textContent = musicOn ? 'Music on' : 'Music off';
+    $('music').setAttribute('aria-pressed', musicOn);
     const broke = credits < bet();
     $('spin').textContent = broke && credits < BETS[0] ? 'REFILL' : 'SPIN';
     $('spin').disabled = spinning; lever.disabled = spinning;
   }
-  function save() { store.set('credits', credits); store.set('betIdx', betIdx); store.set('sound', soundOn); store.set('stops', stops); }
+  function save() { store.set('credits', credits); store.set('betIdx', betIdx); store.set('sound', soundOn); store.set('music', musicOn); store.set('stops', stops); }
   function describe() { canvas.setAttribute('aria-label', 'Reels show ' + stops.map((s, r) => SYM[STRIPS[r][s]].name).join(', ')); }
 
   function countUp(el, to, ms) {
@@ -495,6 +524,10 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   $('betDown').addEventListener('click', () => { if (betIdx > 0) { betIdx--; blip(500); save(); updateUI(); } });
   $('betUp').addEventListener('click', () => { if (betIdx < BETS.length - 1) { betIdx++; blip(700); save(); updateUI(); } });
   $('sound').addEventListener('click', () => { soundOn = !soundOn; save(); updateUI(); if (soundOn) { fetchSfx(); blip(600); } else hush(); });
+  $('music').addEventListener('click', () => {
+    musicOn = !musicOn; save(); updateUI();
+    if (musicOn) { try { audio(); decoded.then(startTheme); } catch {} } else stopTheme();
+  });
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); spin(); }
   });
