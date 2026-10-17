@@ -160,7 +160,7 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   </header>
 
   <div class="stage">
-    <img class="tall" src="img/slots3d/tock.webp" alt="" width="380" height="1153">
+    <img class="tall" id="tock" src="img/slots3d/tock.webp" alt="" width="250" height="707">
     <section class="machine" aria-label="Slot machine">
       <canvas id="reels" role="img" aria-label="Reels"></canvas>
       <img class="cab" src="img/slots3d/cabinet.webp" alt="" width="1000" height="1280">
@@ -458,6 +458,11 @@ header { position: relative; width: 100%; display: flex; justify-content: center
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); spin(); }
   });
+  // Tock idles beside the machine on wide screens (the animation only downloads there)
+  const tock = $('tock');
+  if (matchMedia('(min-width: 861px)').matches && !reduce()) {
+    const anim = new Image(); anim.onload = () => { tock.src = anim.src; }; anim.src = 'img/slots3d/tock-idle.webp';
+  }
   new ResizeObserver(size).observe(canvas);
   loaded.then(() => size());
   describe(); updateUI();
